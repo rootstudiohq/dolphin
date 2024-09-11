@@ -6,13 +6,13 @@ import path from 'node:path';
 import {
   BasicExporter,
   ExportConfig,
-  ExportParser,
   XcodeExporter,
+  XliffExportParser,
 } from './export/index.js';
-import { JsonParser } from './export/parser/json.js';
-import { AppleStringsParser } from './export/parser/strings.js';
-import { TextParser } from './export/parser/text.js';
-import { XCStringsParser } from './export/parser/xcstrings.js';
+import { XliffJsonParser } from './export/parser/json.js';
+import { XliffAppleStringsParser } from './export/parser/strings.js';
+import { XliffTextParser } from './export/parser/text.js';
+import { XliffXCStringsParser } from './export/parser/xcstrings.js';
 import { XliffParser } from './export/parser/xliff.js';
 import { XlocParser } from './export/parser/xloc.js';
 import {
@@ -79,7 +79,7 @@ export async function exportLocalizationBundle({
     }),
     basePath: baseFolder,
   };
-  let parser: ExportParser;
+  let parser: XliffExportParser;
   if (format === LocalizationFormat.XCODE) {
     const exporter = new XcodeExporter({
       projectPath: bundlePath,
@@ -90,15 +90,15 @@ export async function exportLocalizationBundle({
   } else if (format === LocalizationFormat.XCLOC) {
     parser = new XlocParser();
   } else if (format === LocalizationFormat.TEXT) {
-    parser = new TextParser();
+    parser = new XliffTextParser();
   } else if (format === LocalizationFormat.STRINGS) {
-    parser = new AppleStringsParser();
+    parser = new XliffAppleStringsParser();
   } else if (format === LocalizationFormat.XCSTRINGS) {
-    parser = new XCStringsParser();
+    parser = new XliffXCStringsParser();
   } else if (format === LocalizationFormat.XLIFF) {
     parser = new XliffParser();
   } else if (format === LocalizationFormat.JSON) {
-    parser = new JsonParser();
+    parser = new XliffJsonParser();
   } else {
     throw new Error(
       `Unsupported bundle format: ${format}. Please contact us to add support for this format.`,

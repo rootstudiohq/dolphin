@@ -1,0 +1,3 @@
+**Dolphin** 是一种创新的、自动化的国际化（i18n）服务，旨在无缝集成到您的开发流程中，拥有 AI 的强大功能。
+
+<pc id="name" ctype="x-python-brace-param">{name}</pc>

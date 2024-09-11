@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "metadata": {},
+  "strings": {
+    "Home/title": {
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "Home"
+        }
+      }
+    },
+    "Home/meta%2Fdescription": {
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "Title of the home page"
+        }
+      }
+    },
+    "Index%22Title": {
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "Index"
+        }
+      }
+    }
+  }
+}

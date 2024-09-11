@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { ExportLocalizations, LocalizationBundlePath } from '../index.js';
+import { DolphinJSON } from '../storage/index.js';
 import {
   createOutputFolderIfNeed,
   createTemporaryOutputFolder,
@@ -19,6 +20,20 @@ export * from './parser/xliff.js';
 export * from './parser/xloc.js';
 
 export interface ExportParser {
+  exportSource(options: {
+    fileId: string; // The file ID specified in the config file
+    content: string;
+    language: string;
+  }): Promise<DolphinJSON>; // export the json data for source language
+  exportTarget(options: {
+    fileId: string; // The file ID specified in the config file
+    content?: string;
+    language: string;
+    json: DolphinJSON;
+  }): Promise<DolphinJSON>; // export and merge the target language to the source data
+}
+
+export interface XliffExportParser {
   parse(
     filePath: string,
     language: string,
@@ -42,14 +57,14 @@ export type ExportLanguageConfig = {
 export class BasicExporter implements ExportLocalizations {
   private config: ExportConfig;
   private outputFolder?: string;
-  private parser: ExportParser;
+  private parser: XliffExportParser;
   constructor({
     config,
     parser,
     outputFolder,
   }: {
     config: ExportConfig;
-    parser: ExportParser;
+    parser: XliffExportParser;
     outputFolder?: string;
   }) {
     this.config = config;

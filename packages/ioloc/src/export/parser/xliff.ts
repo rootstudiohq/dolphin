@@ -1,9 +1,9 @@
 import { XliffVersion, parseXliffPath } from '../../xliff/index.js';
 import { convertV1toV2 } from '../../xliff/utils.js';
 import { Xliff } from '../../xliff/xliff-spec.js';
-import { ExportParser } from '../index.js';
+import { XliffExportParser } from '../index.js';
 
-export class XliffParser implements ExportParser {
+export class XliffParser implements XliffExportParser {
   async parse(
     filePath: string,
     language: string,

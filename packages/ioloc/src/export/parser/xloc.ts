@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { Xliff } from '../../xliff/xliff-spec.js';
-import { ExportParser } from '../index.js';
+import { XliffExportParser } from '../index.js';
 import { XliffParser } from './xliff.js';
 
-export class XlocParser implements ExportParser {
+export class XlocParser implements XliffExportParser {
   async parse(
     filePath: string,
     language: string,

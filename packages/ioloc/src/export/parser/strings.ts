@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { DotStringsItem, DotStringsParser } from '../../common/dotstrings.js';
+import { DolphinJSON } from '../../storage/index.js';
 import { textHash } from '../../utils.js';
 import {
   Notes,
@@ -11,9 +12,9 @@ import {
   Unit,
   Xliff,
 } from '../../xliff/xliff-spec.js';
-import { ExportParser } from '../index.js';
+import { ExportParser, XliffExportParser } from '../index.js';
 
-export class AppleStringsParser implements ExportParser {
+export class XliffAppleStringsParser implements XliffExportParser {
   async parse(
     filePath: string,
     language: string,
@@ -132,5 +133,82 @@ export class AppleStringsParser implements ExportParser {
         },
       ],
     };
+  }
+}
+
+export class AppleStringsParser implements ExportParser {
+  async exportSource(options: {
+    fileId: string;
+    content: string;
+    language: string;
+  }): Promise<DolphinJSON> {
+    const json: DolphinJSON = {
+      version: '1.0',
+      fileId: options.fileId,
+      sourceLanguage: options.language,
+      metadata: {},
+      strings: {},
+    };
+
+    const parser = new DotStringsParser(false);
+    const items: DotStringsItem[] = [];
+    parser.onItem((item) => items.push(item));
+    parser.feed(options.content);
+
+    for (const item of items) {
+      if (item.key) {
+        json.strings[item.key] = {
+          comment: item.comment || undefined,
+          localizations: {
+            [options.language]: {
+              state: 'new',
+              metadata: {
+                extractedFrom: 'source',
+              },
+              value: item.value || '',
+            },
+          },
+        };
+      }
+    }
+
+    return json;
+  }
+
+  async exportTarget(options: {
+    fileId: string;
+    content?: string;
+    language: string;
+    json: DolphinJSON;
+  }): Promise<DolphinJSON> {
+    const json = options.json;
+    const items: DotStringsItem[] = [];
+    if (options.content && options.content.trim().length > 0) {
+      const parser = new DotStringsParser(false);
+      parser.onItem((item) => items.push(item));
+      parser.feed(options.content);
+    }
+
+    for (const key in json.strings) {
+      const item = items.find((i) => i.key === key);
+      if (item) {
+        json.strings[key].localizations[options.language] = {
+          state: 'translated',
+          metadata: {
+            extractedFrom: 'existing',
+          },
+          value: item.value || '',
+        };
+      } else {
+        json.strings[key].localizations[options.language] = {
+          state: 'new',
+          metadata: {
+            extractedFrom: 'source',
+          },
+          value: json.strings[key].localizations[json.sourceLanguage].value,
+        };
+      }
+    }
+    return json;
   }
 }

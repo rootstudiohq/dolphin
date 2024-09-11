@@ -331,9 +331,12 @@ export async function updateTranslatedStrings(
     logger.error(`Cannot merge file without a target language.`);
     return;
   }
+  if (!xliff.elements) {
+    return;
+  }
   xliff.elements.map((file) => {
     const startKeys = [sourceLanguage, file.attributes.id];
-    file.elements = file.elements.map((element) => {
+    file.elements = (file.elements || []).map((element) => {
       if (element.name === 'unit' || element.name === 'group') {
         return updateTranslatedElement(
           translatedStrings,

@@ -1,0 +1,3 @@
+**Dolphin** is an innovative, automated internationalization (i18n) service designed to integrate seamlessly into your development pipeline, with the power of AI.
+
+<pc id="name" ctype="x-python-brace-param">{name}</pc>
