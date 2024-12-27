@@ -1,6 +1,6 @@
 {
-  "name": "@icodesign/dolphin",
-  "version": "0.7.0",
+  "name": "@root/dolphin",
+  "version": "0.8.0",
   "main": "./dist/index.cjs",
   "bin": "./bin/cli.cjs",
   "type": "module",

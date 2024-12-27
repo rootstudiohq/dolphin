@@ -48,27 +48,41 @@ async function handleLocalizeCommand(args: CmdArgs) {
   logger.info('===================================');
   logger.info('============= Localize ============');
   logger.info('===================================');
-  consoleLogger.info(
-    chalk.gray(
-      `Full logs directory: ${logDirectory}, check out for details if needed\n`,
-    ),
-  );
+  consoleLogger.info(chalk.gray(`Detailed logs directory: ${logDirectory}\n`));
   var initialStartTime = performance.now();
   if (!args.config) {
     spinner.fail(chalk.red('Config file path is not specified'));
     return;
   }
+  consoleLogger.info(`=== Step 0: Load config ===`);
   const config = await loadConfig({
     path: args.config,
   });
-  const translationBundle = await exportLocalizations(config);
+  /**
+   * Localize process:
+   * - Export localizations
+   * - Translate localizations
+   * - Import localizations
+   */
+  consoleLogger.info(`=== Step 1: Export strings ===`);
+  const { baseOutputFolder: translationBundle, exportedResults } =
+    await exportLocalizations(config);
+  consoleLogger.info(`=== Step 2: Translate strings ===`);
   await translateLocalizations({
-    baseOutputFolder: translationBundle.baseOutputFolder,
+    baseOutputFolder: translationBundle,
     config,
   });
+  consoleLogger.info(`=== Step 3: Import translations ===`);
+  let metas: Record<string, { intermediateBundlePath?: string }> = {};
+  for (const result of exportedResults) {
+    if (result.meta) {
+      metas[result.id] = result.meta;
+    }
+  }
   await importLocalizations({
     config,
     translationBundle,
+    metas,
   });
   const duration = formattedDuration(performance.now() - initialStartTime);
   spinner

@@ -1,46 +1,61 @@
 import { LocalizationConfig, LocalizationFormat } from '@repo/base/config';
 import { logger } from '@repo/base/logger';
+import { absoluteFilePath } from '@repo/base/utils';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import {
+  AppleStringsParser,
   BasicExporter,
   ExportConfig,
+  ExportParser,
+  JsonParser,
+  StringCatalogParser,
+  TextParser,
+  XclocExporter,
   XcodeExporter,
-  XliffExportParser,
+  XliffParser,
 } from './export/index.js';
-import { XliffJsonParser } from './export/parser/json.js';
-import { XliffAppleStringsParser } from './export/parser/strings.js';
-import { XliffTextParser } from './export/parser/text.js';
-import { XliffXCStringsParser } from './export/parser/xcstrings.js';
-import { XliffParser } from './export/parser/xliff.js';
-import { XlocParser } from './export/parser/xloc.js';
 import {
+  AppleStringsMerger,
   BasicImporter,
   ImportConfig,
   ImportMerger,
-  XclocMerger,
+  JSONMerger,
+  TextMerger,
+  XCStringsMerger,
+  XclocImporter,
   XcodeImporter,
+  XliffMerger,
 } from './import/index.js';
-import { JsonMerger } from './import/merger/json.js';
-import { AppleStringsMerger } from './import/merger/strings.js';
-import { TextMerger } from './import/merger/text.js';
-import { XCStringsMerger } from './import/merger/xcstrings.js';
-import { XliffMerger } from './import/merger/xliff.js';
-import { createTemporaryOutputFolder } from './utils.js';
-import { XcodeExportLocalizations, XcodeImportLocalizations } from './xcode.js';
+import {
+  DOLPHIN_JSON_FILE_NAME,
+  DolphinJSON,
+  readDolphinJSON,
+} from './storage/index.js';
+import { createOutputFolderIfNeed } from './utils.js';
 
 export * from './utils.js';
 
-export type LocalizationBundlePath = {
-  bundlePath: string;
-  intermediateBundlePath?: string; // Path to intermediate output artifacts. For example, after exporting from Xcode, the xcloc files will be stored in this folder and can be used for importing localizations afterwards.
+export type ExportLocalizationsResult = {
+  json: DolphinJSON;
+  meta?: {
+    intermediateBundlePath?: string;
+  };
 };
 
 export interface ExportLocalizations {
-  export(): Promise<LocalizationBundlePath>;
+  export(): Promise<ExportLocalizationsResult>;
 }
 
+/**
+ * Export localizations to output folder with specific config.
+ * @param config - The localization configuration.
+ * @param baseLanguage - The base language code.
+ * @param baseFolder - The base folder path.
+ * @param outputFolder - The output folder path.
+ * @returns The path to the exported localization bundle.
+ */
 export async function exportLocalizationBundle({
   config,
   baseLanguage,
@@ -51,73 +66,109 @@ export async function exportLocalizationBundle({
   baseLanguage: string;
   baseFolder: string;
   outputFolder: string;
-}): Promise<LocalizationBundlePath> {
+}): Promise<{
+  json: DolphinJSON;
+  outputFolder: string;
+  meta?: {
+    intermediateBundlePath?: string;
+  };
+}> {
   const format = config.format;
   if (!('languages' in config)) {
     throw new Error(
       `languages is required for ${format} format in the configuration`,
     );
   }
-  let bundlePath = config.path.replace('${LANGUAGE}', baseLanguage);
-  if (!path.isAbsolute(bundlePath)) {
-    bundlePath = path.join(baseFolder, bundlePath);
-  }
-  const exportConfig = {
+  let bundlePath = absoluteFilePath(
+    config.path.replace('${LANGUAGE}', baseLanguage),
+    baseFolder,
+  );
+  const exportConfig: ExportConfig = {
+    id: config.id,
     sourceLanguage: {
       code: baseLanguage,
       path: bundlePath,
     },
     targetLanguages: config.languages.map((language: string) => {
-      let bundlePath = config.path.replace('${LANGUAGE}', language);
-      if (!path.isAbsolute(bundlePath)) {
-        bundlePath = path.join(baseFolder, bundlePath);
-      }
+      let bundlePath = absoluteFilePath(
+        config.path.replace('${LANGUAGE}', language),
+        baseFolder,
+      );
       return {
         code: language,
         path: bundlePath,
       };
     }),
-    basePath: baseFolder,
+    baseFolder: baseFolder,
   };
-  let parser: XliffExportParser;
+  let exportResult: ExportLocalizationsResult;
+  let parser: ExportParser;
   if (format === LocalizationFormat.XCODE) {
     const exporter = new XcodeExporter({
       projectPath: bundlePath,
       config: exportConfig,
       outputFolder,
     });
-    return await exporter.export();
+    exportResult = await exporter.export();
   } else if (format === LocalizationFormat.XCLOC) {
-    parser = new XlocParser();
-  } else if (format === LocalizationFormat.TEXT) {
-    parser = new XliffTextParser();
-  } else if (format === LocalizationFormat.STRINGS) {
-    parser = new XliffAppleStringsParser();
-  } else if (format === LocalizationFormat.XCSTRINGS) {
-    parser = new XliffXCStringsParser();
-  } else if (format === LocalizationFormat.XLIFF) {
-    parser = new XliffParser();
-  } else if (format === LocalizationFormat.JSON) {
-    parser = new XliffJsonParser();
+    const exporter = new XclocExporter({
+      config: exportConfig,
+    });
+    exportResult = await exporter.export();
   } else {
+    if (format === LocalizationFormat.TEXT) {
+      parser = new TextParser();
+    } else if (format === LocalizationFormat.STRINGS) {
+      parser = new AppleStringsParser();
+    } else if (format === LocalizationFormat.XCSTRINGS) {
+      parser = new StringCatalogParser();
+    } else if (format === LocalizationFormat.XLIFF) {
+      parser = new XliffParser();
+    } else if (format === LocalizationFormat.JSON) {
+      parser = new JsonParser();
+    } else {
+      throw new Error(
+        `Unsupported bundle format: ${format}. Please contact us to add support for this format.`,
+      );
+    }
+    let exporter = new BasicExporter({
+      config: exportConfig,
+      parser: parser,
+    });
+    exportResult = await exporter.export();
+  }
+  // save the file to output folder
+  logger.info(
+    `[BasicExporter: ${config.id}]: Saving dolphin json to ${outputFolder}`,
+  );
+  if (!path.isAbsolute(outputFolder)) {
     throw new Error(
-      `Unsupported bundle format: ${format}. Please contact us to add support for this format.`,
+      `[BasicExporter: ${config.id}]: Output folder should be an absolute path: ${outputFolder}`,
     );
   }
-  let exporter = new BasicExporter({
-    config: exportConfig,
-    parser: parser,
+  await createOutputFolderIfNeed(outputFolder);
+  const dolphinJsonPath = path.join(outputFolder, DOLPHIN_JSON_FILE_NAME);
+  if (!exportResult.json.metadata) {
+    exportResult.json.metadata = {};
+  }
+  exportResult.json.metadata = {
+    ...exportResult.json.metadata,
+    createdAt: new Date().toISOString(),
+    lastExportedAt: new Date().toISOString(),
+  };
+  await fs.promises.writeFile(
+    dolphinJsonPath,
+    JSON.stringify(exportResult.json, null, 2),
+  );
+  return {
+    json: exportResult.json,
     outputFolder,
-  });
-  return await exporter.export();
-}
-
-export interface ImportLocalizationsResult {
-  code: number;
+    meta: exportResult.meta,
+  };
 }
 
 export interface ImportLocalizations {
-  import(): Promise<ImportLocalizationsResult>;
+  import(): Promise<void>;
 }
 
 export async function importLocalizationBundle({
@@ -125,68 +176,93 @@ export async function importLocalizationBundle({
   localizationBundlePath,
   baseLanguage,
   baseFolder,
+  meta,
 }: {
   config: LocalizationConfig;
-  localizationBundlePath: LocalizationBundlePath;
+  localizationBundlePath: string;
   baseLanguage: string;
   baseFolder: string;
-}): Promise<ImportLocalizationsResult> {
+  meta?: {
+    intermediateBundlePath?: string;
+  };
+}): Promise<void> {
+  logger.info(
+    `[ImportLocalizationBundle: ${config.id}]: Importing localization bundle from ${localizationBundlePath}`,
+  );
   if (!('languages' in config)) {
     throw new Error(
       `languages is required for ${config.format} format in the configuration`,
     );
   }
-  let importBundlePath = localizationBundlePath.bundlePath;
-  if (!path.isAbsolute(importBundlePath)) {
-    importBundlePath = path.join(baseFolder, importBundlePath);
-  }
-  let sourcePath = config.path.replace('${LANGUAGE}', baseLanguage);
-  if (!path.isAbsolute(sourcePath)) {
-    sourcePath = path.join(baseFolder, sourcePath);
-  }
-  let importConfig: ImportConfig = {
+  const importBundlePath = absoluteFilePath(localizationBundlePath, baseFolder);
+  const dolphinJsonPath = path.join(importBundlePath, DOLPHIN_JSON_FILE_NAME);
+  const dolphinJson = await readDolphinJSON(dolphinJsonPath);
+  const sourcePath = absoluteFilePath(
+    config.path.replace('${LANGUAGE}', baseLanguage),
+    baseFolder,
+  );
+  const importConfig: ImportConfig = {
+    id: config.id,
+    json: dolphinJson,
     sourceLanguage: {
       code: baseLanguage,
       path: sourcePath,
     },
     targetLanguages: config.languages.map((language: string) => {
-      let targetBundlePath = config.path.replace('${LANGUAGE}', language);
-      if (!path.isAbsolute(targetBundlePath)) {
-        targetBundlePath = path.join(baseFolder, targetBundlePath);
-      }
+      let targetPath = absoluteFilePath(
+        config.path.replace('${LANGUAGE}', language),
+        baseFolder,
+      );
       return {
         code: language,
-        from: path.join(importBundlePath, `${language}.xliff`),
-        to: targetBundlePath,
+        path: targetPath,
       };
     }),
+    baseFolder: baseFolder,
   };
-  let merger: ImportMerger;
   if (config.format === LocalizationFormat.XCODE) {
+    const intermediateBundlePath = meta?.intermediateBundlePath;
+    if (!intermediateBundlePath) {
+      throw new Error(
+        `[ImportLocalizationBundle: ${config.id}]: Intermediate bundle path is required for Xcode format`,
+      );
+    }
     const importer = new XcodeImporter({
       config: importConfig,
-      localizationBundlePath,
+      intermediateBundlePath,
       projectPath: config.path,
-      baseFolder,
     });
-    return await importer.import();
+    await importer.import();
   } else if (config.format === LocalizationFormat.XCLOC) {
-    merger = new XclocMerger();
-  } else if (config.format === LocalizationFormat.TEXT) {
-    merger = new TextMerger();
-  } else if (config.format === LocalizationFormat.STRINGS) {
-    merger = new AppleStringsMerger();
-  } else if (config.format === LocalizationFormat.XCSTRINGS) {
-    merger = new XCStringsMerger();
-  } else if (config.format === LocalizationFormat.XLIFF) {
-    merger = new XliffMerger();
-  } else if (config.format === LocalizationFormat.JSON) {
-    merger = new JsonMerger();
+    const importer = new XclocImporter({ config: importConfig });
+    await importer.import();
   } else {
-    throw new Error(`Unsupported budnle format: ${config.format}`);
+    let merger: ImportMerger;
+    if (config.format === LocalizationFormat.TEXT) {
+      merger = new TextMerger();
+    } else if (config.format === LocalizationFormat.STRINGS) {
+      merger = new AppleStringsMerger();
+    } else if (config.format === LocalizationFormat.XCSTRINGS) {
+      merger = new XCStringsMerger();
+    } else if (config.format === LocalizationFormat.XLIFF) {
+      merger = new XliffMerger();
+    } else if (config.format === LocalizationFormat.JSON) {
+      merger = new JSONMerger();
+    } else {
+      throw new Error(`Unsupported budnle format: ${config.format}`);
+    }
+    const importer = new BasicImporter({ config: importConfig, merger });
+    await importer.import();
   }
-  const importer = new BasicImporter({ config: importConfig, merger });
-  return await importer.import();
+  // update lastImportedAt metadata
+  if (!dolphinJson.metadata) {
+    dolphinJson.metadata = {};
+  }
+  dolphinJson.metadata.lastImportedAt = new Date().toISOString();
+  await fs.promises.writeFile(
+    dolphinJsonPath,
+    JSON.stringify(dolphinJson, null, 2),
+  );
 }
 
 export async function replaceBundle(bundlePath: string, other: string) {

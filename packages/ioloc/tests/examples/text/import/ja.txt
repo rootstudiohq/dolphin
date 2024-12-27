@@ -1,3 +1,0 @@
-ドルフィン は、開発パイプラインにシームレスに統合される革新的で自動化された国際化（i18n）サービスで、AI の力を備えています。
-
-<pc id="name" ctype="x-python-brace-param">{name}</pc>

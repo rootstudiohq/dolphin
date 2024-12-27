@@ -1,165 +1,178 @@
-import { logger } from '@repo/base/logger';
-import fs from 'node:fs';
-import path from 'node:path';
+import { writeFile } from '@repo/base/utils';
 
-import {
-  XCStringsFile,
-  parseXCStrings,
-} from '../../export/parser/xcstrings.js';
-import { decodeXliffAttributeValue } from '../../xliff/index.js';
-import { elementAsText } from '../../xliff/utils.js';
-import { Notes, Segment, Target, Unit, Xliff } from '../../xliff/xliff-spec.js';
-import { ImportMerger, MergeConfig } from '../index.js';
+import { XCStringsFile } from '../../export/parser/xcstrings.js';
+import { DolphinJSON } from '../../storage/index.js';
+import { ImportMerger } from '../basic.js';
+import { getTargetValue } from './common.js';
 
 export class XCStringsMerger implements ImportMerger {
-  async merge(xliff: Xliff, config: MergeConfig): Promise<void> {
-    let isUsingStringSet = false;
-    // load source file
-    const sourceFilePath = config.sourceLanguage.path;
-    const sourceFileContent = await fs.promises.readFile(
-      sourceFilePath,
-      'utf-8',
-    );
-    const sourceXCStrings = parseXCStrings(sourceFileContent);
+  async merge(options: {
+    json: DolphinJSON;
+    sourceFilePath: string;
+    targetLanguage: string;
+    targetFilePath: string;
+  }): Promise<void> {
+    const { json, targetLanguage, targetFilePath } = options;
 
-    // load target file
-    const filePath = config.targetLanguage.to;
-    const fileFolder = path.dirname(filePath);
-    if (!fs.existsSync(fileFolder)) {
-      await fs.promises.mkdir(fileFolder, { recursive: true });
+    // Create a new XCStrings file
+    const xcstrings: XCStringsFile = {
+      sourceLanguage: json.sourceLanguage,
+      version: '1.0',
+      strings: {},
+    };
+
+    // Update the XCStrings file with translations
+    for (const [key, value] of Object.entries(json.strings)) {
+      const targetValue = getTargetValue({
+        json,
+        targetLanguage,
+        key,
+      });
+      if (targetValue === undefined) {
+        continue;
+      }
+
+      // Add base properties for the string
+      if (!xcstrings.strings[key]) {
+        xcstrings.strings[key] = {};
+      }
+
+      // Add string properties
+      if (value.comment) {
+        xcstrings.strings[key].comment = value.comment;
+      }
+      if (value.metadata?.extractionState) {
+        xcstrings.strings[key].extractionState = value.metadata.extractionState;
+      }
+      if (value.metadata?.shouldTranslate !== undefined) {
+        xcstrings.strings[key].shouldTranslate = value.metadata.shouldTranslate;
+      }
+
+      const unitType = value.metadata?.stringCatalogUnitType;
+      if (unitType === 'stringUnit') {
+        this.updateStringUnit({
+          xcstrings,
+          key,
+          targetLanguage,
+          value: targetValue,
+        });
+      } else if (unitType === 'stringSet') {
+        this.updateStringSet({
+          xcstrings,
+          key,
+          targetLanguage,
+          value: targetValue,
+        });
+      } else if (unitType === 'variations') {
+        this.updateVariations({
+          xcstrings,
+          key,
+          targetLanguage,
+          value: targetValue,
+        });
+      }
     }
 
-    if (!sourceXCStrings.strings) {
-      logger.warn(`No strings in source XCStrings file: ${sourceFilePath}`);
-      await fs.promises.writeFile(filePath, '{}');
-      return;
+    // Write the updated XCStrings file
+    await writeFile(targetFilePath, JSON.stringify(xcstrings, null, 2));
+  }
+
+  private updateStringUnit(params: {
+    xcstrings: XCStringsFile;
+    key: string;
+    targetLanguage: string;
+    value: string;
+  }) {
+    const { xcstrings, key, targetLanguage, value } = params;
+
+    if (!xcstrings.strings[key]) {
+      xcstrings.strings[key] = {};
     }
-    // check if source file is using string set
-    // isUsingStringSet = Object.values(sourceXCStrings.strings).some(
-    //   (s) =>
-    //     s.localizations &&
-    //     s.localizations[sourceXCStrings.sourceLanguage]?.stringSet,
-    // );
 
-    // const file = xliff.elements[0];
-    // if (!file) {
-    //   logger.warn(`No xliff file element in ${filePath}`);
-    //   await fs.promises.writeFile(filePath, '{}');
-    //   return;
-    // }
+    if (!xcstrings.strings[key].localizations) {
+      xcstrings.strings[key].localizations = {};
+    }
 
-    // const units = (file.elements ?? []).filter(
-    //   (e) => e.name === 'unit',
-    // ) as Unit[];
-    // if (units.length === 0) {
-    //   logger.warn(`No unit element in ${filePath}`);
-    //   await fs.promises.writeFile(filePath, '{}');
-    //   return;
-    // }
+    xcstrings.strings[key].localizations![targetLanguage] = {
+      stringUnit: {
+        state: 'translated',
+        value: value,
+      },
+    };
+  }
 
-    // let xcstrings: XCStringsFile;
-    // try {
-    //   const existingContent = await fs.promises.readFile(filePath, 'utf-8');
-    //   xcstrings = parseXCStrings(existingContent);
-    // } catch (error) {
-    //   logger.warn(`Failed to read existing XCStrings file: ${error}`);
-    //   xcstrings = {
-    //     sourceLanguage: xliff.attributes.srcLang,
-    //     strings: {},
-    //     version: '1.0',
-    //   };
-    // }
+  private updateStringSet(params: {
+    xcstrings: XCStringsFile;
+    key: string;
+    targetLanguage: string;
+    value: string;
+  }) {
+    const { xcstrings, key, targetLanguage, value } = params;
 
-    // const targetLanguage = xliff.attributes.trgLang;
-    // if (!targetLanguage) {
-    //   throw new Error(`Missing target language in xliff file`);
-    // }
+    // Extract original key and index from the encoded key
+    const [encodedOriginalKey, indexStr] = key.split('/');
+    const originalKey = decodeURIComponent(encodedOriginalKey);
+    const index = parseInt(indexStr, 10);
 
-    // for (const unit of units) {
-    //   const segment = (unit.elements || []).find(
-    //     (e) => e.name === 'segment',
-    //   ) as Segment | undefined;
-    //   if (!segment) {
-    //     logger.warn(
-    //       `No segment element in ${filePath} for unit: ${JSON.stringify(unit)}`,
-    //     );
-    //     continue;
-    //   }
-    //   if (segment.attributes?.state === 'initial') {
-    //     logger.warn(
-    //       `Segment <${JSON.stringify(segment)}> state is initial in ${filePath}, skip merging`,
-    //     );
-    //     continue;
-    //   }
-    //   const target = (segment.elements || []).find(
-    //     (e) => e.name === 'target',
-    //   ) as Target | undefined;
-    //   let targetText = '';
-    //   if (target) {
-    //     targetText = elementAsText(target);
-    //   }
+    if (!xcstrings.strings[originalKey]) {
+      xcstrings.strings[originalKey] = {};
+    }
 
-    //   const commentElement = (unit.elements || []).find(
-    //     (e) => e.name === 'notes',
-    //   ) as Notes | undefined;
-    //   const comment = commentElement
-    //     ? elementAsText(commentElement)
-    //     : undefined;
+    if (!xcstrings.strings[originalKey].localizations) {
+      xcstrings.strings[originalKey].localizations = {};
+    }
 
-    //   const splitIds = unit.attributes.id.split('-');
-    //   const index = parseInt(splitIds[splitIds.length - 1], 10);
-    //   const key = decodeXliffAttributeValue(splitIds.slice(0, -1).join('-'));
-    //   if (!xcstrings.strings[key]) {
-    //     xcstrings.strings[key] = {
-    //       extractionState:
-    //         unit.attributes.extractionState !== undefined
-    //           ? `${unit.attributes.extractionState}`
-    //           : undefined,
-    //       comment,
-    //       localizations: {},
-    //     };
-    //   }
+    const localization =
+      xcstrings.strings[originalKey].localizations![targetLanguage];
+    if (!localization || !('stringSet' in localization)) {
+      xcstrings.strings[originalKey].localizations![targetLanguage] = {
+        stringSet: {
+          state: 'translated',
+          values: [],
+        },
+      };
+    }
 
-    //   if (!xcstrings.strings[key].localizations) {
-    //     xcstrings.strings[key].localizations = {};
-    //   }
-    //   if (isUsingStringSet) {
-    //     if (
-    //       !xcstrings.strings[key].localizations[targetLanguage] ||
-    //       !xcstrings.strings[key].localizations[targetLanguage].stringSet ||
-    //       xcstrings.strings[key].localizations[targetLanguage].stringSet
-    //         .values === undefined
-    //     ) {
-    //       xcstrings.strings[key].localizations[targetLanguage] = {
-    //         stringSet: {
-    //           state: 'translated',
-    //           values: [],
-    //         },
-    //       };
-    //     }
-    //     const values =
-    //       xcstrings.strings[key].localizations[targetLanguage].stringSet
-    //         ?.values || [];
-    //     if (values.length > index) {
-    //       values[index] = targetText;
-    //     } else {
-    //       for (let i = values.length; i <= index; i++) {
-    //         values.push('');
-    //       }
-    //       values[index] = targetText;
-    //     }
-    //     xcstrings.strings[key].localizations[targetLanguage].stringSet!.values =
-    //       values;
-    //   } else {
-    //     xcstrings.strings[key].localizations[targetLanguage] = {
-    //       stringUnit: {
-    //         state: 'translated',
-    //         value: targetText,
-    //       },
-    //     };
-    //   }
-    // }
+    const stringSet = (
+      xcstrings.strings[originalKey].localizations![targetLanguage] as any
+    ).stringSet;
+    if (!stringSet.values) {
+      stringSet.values = [];
+    }
+    stringSet.values[index] = value;
+  }
 
-    // await fs.promises.writeFile(filePath, JSON.stringify(xcstrings, null, 2));
+  private updateVariations(params: {
+    xcstrings: XCStringsFile;
+    key: string;
+    targetLanguage: string;
+    value: string;
+  }) {
+    const { xcstrings, key, targetLanguage, value } = params;
+
+    // Extract original key and device from the encoded key
+    const [encodedOriginalKey, device] = key.split('/');
+    const originalKey = decodeURIComponent(encodedOriginalKey);
+
+    if (!xcstrings.strings[originalKey]) {
+      xcstrings.strings[originalKey] = {};
+    }
+
+    if (!xcstrings.strings[originalKey].localizations) {
+      xcstrings.strings[originalKey].localizations = {};
+    }
+
+    xcstrings.strings[originalKey].localizations![targetLanguage] = {
+      variations: {
+        device: {
+          [device]: {
+            stringUnit: {
+              state: 'translated',
+              value: value,
+            },
+          },
+        },
+      },
+    };
   }
 }

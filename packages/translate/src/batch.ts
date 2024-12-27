@@ -16,6 +16,13 @@ export type TranslationBatch = {
   expectedTokens: number;
 };
 
+/**
+ * Create batches of translations for a given set of entities to avoid token limits.
+ *
+ * @param entities - The set of entities to be translated.
+ * @param config - The configuration for the translation process.
+ * @returns An array of translation batches.
+ */
 export function createBatches(
   entities: LocalizationEntity[],
   config: {
@@ -50,9 +57,7 @@ export function createBatches(
     );
     if (expectedTokens > maxSafeTokens) {
       throw new Error(
-        `${
-          entity.key
-        } is too long to be translated: ${entity.source.value.slice(
+        `${entity.key} is too long to be translated: ${entity.sourceText.slice(
           0,
           20,
         )}...}`,
@@ -73,15 +78,13 @@ export function createBatches(
           (i + 1) * maxLanguagesPerBatch,
         );
         batches.push({
-          sourceLanguage: entity.source.code,
+          sourceLanguage: entity.sourceLanguage,
           targetLanguages: group,
           contents: [
             {
               key: entity.key,
-              source: entity.source.value,
-              notes: [
-                ...new Set(group.flatMap((t) => entity.target[t]!.notes)),
-              ],
+              source: entity.sourceText,
+              notes: entity.allComments,
             },
           ],
           sourceTokens: calEntitySourceTokens(
@@ -103,7 +106,7 @@ export function createBatches(
       for (let remainingEntity of remainings) {
         const remainingTargetLanguages = remainingEntity.untranslatedLanguages;
         if (
-          remainingEntity.source.code === entity.source.code &&
+          remainingEntity.sourceLanguage === entity.sourceLanguage &&
           remainingTargetLanguages.join(', ') === targetLanguages.join(', ')
         ) {
           const expectedTokens =
@@ -127,14 +130,12 @@ export function createBatches(
         }
       }
       batches.push({
-        sourceLanguage: entity.source.code,
+        sourceLanguage: entity.sourceLanguage,
         targetLanguages: targetLanguages,
         contents: similarEntities.map((e) => ({
           key: e.key,
-          source: e.source.value,
-          notes: [
-            ...new Set(targetLanguages.flatMap((t) => e.target[t]!.notes)),
-          ],
+          source: e.sourceText,
+          notes: e.allComments,
         })),
         sourceTokens: currentSourceTokens,
         expectedTokens: currentExpectedTokens,

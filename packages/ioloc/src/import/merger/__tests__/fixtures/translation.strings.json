@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "strings": {
+    "greeting": {
+      "comment": "Greeting message",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "value": "Hello"
+        },
+        "zh": {
+          "state": "translated",
+          "value": "你好"
+        }
+      }
+    },
+    "messages.welcome": {
+      "comment": "Welcome message shown on first launch",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "value": "Welcome to our app"
+        },
+        "zh": {
+          "state": "translated",
+          "value": "欢迎使用我们的应用"
+        }
+      }
+    },
+    "messages.goodbye": {
+      "comment": "Goodbye message",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "value": "Goodbye!"
+        },
+        "zh": {
+          "state": "translated",
+          "value": "再见!"
+        }
+      }
+    }
+  }
+}

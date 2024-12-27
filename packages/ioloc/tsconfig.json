@@ -1,5 +1,10 @@
 {
   "extends": "@repo/typescript-config/lib.json",
-  "include": ["src", "tests"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
   "exclude": ["dist", "build", "node_modules"]
 }

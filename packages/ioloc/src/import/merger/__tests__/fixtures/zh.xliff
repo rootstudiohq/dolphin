@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="zh" datatype="plaintext" original="file.ext">
+    <header>
+      <tool tool-id="com.apple.dt.xcode" tool-name="Xcode" tool-version="14.0"/>
+    </header>
+    <body>
+      <trans-unit id="greeting" state="translated">
+        <source>Hello</source>
+        <target>你好</target>
+        <note>A simple greeting</note>
+      </trans-unit>
+      <trans-unit id="farewell" state="translated">
+        <source>Goodbye</source>
+        <target>再见</target>
+        <note>A farewell message</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

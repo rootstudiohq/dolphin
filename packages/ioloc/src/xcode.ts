@@ -1,6 +1,6 @@
 import { XcodeProject } from '@bacons/xcode';
-import { CommonLocalizationConfig } from '@repo/base/config';
 import { logger } from '@repo/base/logger';
+import { absoluteFilePath } from '@repo/base/utils';
 import child_process from 'child_process';
 import { spawn } from 'child_process';
 import fs from 'node:fs';
@@ -40,9 +40,10 @@ export class XcodeExportLocalizations {
 
     const outputFolder = await createOutputFolderIfNeed(this.outputFolder);
 
-    const absoluteProjectPath = path.isAbsolute(this.projectPath)
-      ? this.projectPath
-      : path.join(this.baseFolder, this.projectPath);
+    const absoluteProjectPath = absoluteFilePath(
+      this.projectPath,
+      this.baseFolder,
+    );
     // get all known regions
     const xcodeProject = XcodeProject.open(
       path.join(absoluteProjectPath, 'project.pbxproj'),
@@ -124,9 +125,7 @@ export class XcodeImportLocalizations {
       );
     }
 
-    const absoluteProjectPath = path.isAbsolute(projectPath)
-      ? projectPath
-      : path.join(baseFolder, projectPath);
+    const absoluteProjectPath = absoluteFilePath(projectPath, baseFolder);
     // run importLocaizations command
     const xclocPaths = (
       await fs.promises.readdir(localizationBundlePath, { withFileTypes: true })

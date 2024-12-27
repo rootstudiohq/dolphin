@@ -1,95 +1,26 @@
 import { createHash } from 'node:crypto';
-import fs from 'node:fs';
 import path from 'node:path';
 
 import { DolphinJSON } from '../../storage/index.js';
-import { textHash } from '../../utils.js';
-import { Xliff } from '../../xliff/xliff-spec.js';
-import { ExportParser, XliffExportParser } from '../index.js';
+import { ExportParser } from '../index.js';
 
-export class XliffTextParser implements XliffExportParser {
-  async parse(
-    filePath: string,
-    language: string,
-    sourceFilePath: string,
-    sourceLanguage: string,
-    basePath: string,
-  ): Promise<Xliff> {
-    const fileId = textHash(sourceFilePath);
-    const xliffOriginalPath = path.relative(basePath, filePath);
-    let targetText = '';
-    if (fs.existsSync(filePath)) {
-      targetText = await fs.promises.readFile(filePath, 'utf-8');
-    }
-    const sourceText = await fs.promises.readFile(sourceFilePath, 'utf-8');
-    const state = targetText !== '' ? 'translated' : 'initial';
-    return {
-      name: 'xliff',
-      type: 'element',
-      attributes: {
-        version: '2.0',
-        srcLang: sourceLanguage,
-        trgLang: language,
-      },
-      elements: [
-        {
-          name: 'file',
-          type: 'element',
-          attributes: {
-            id: fileId,
-            original: xliffOriginalPath,
-          },
-          elements: [
-            {
-              name: 'unit',
-              type: 'element',
-              attributes: {
-                id: fileId,
-              },
-              elements: [
-                {
-                  name: 'segment',
-                  type: 'element',
-                  attributes: {
-                    state,
-                  },
-                  elements: [
-                    {
-                      name: 'source',
-                      type: 'element',
-                      elements: [
-                        {
-                          type: 'text',
-                          text: sourceText,
-                        },
-                      ],
-                    },
-                    {
-                      name: 'target',
-                      type: 'element',
-                      elements: [
-                        {
-                          type: 'text',
-                          text: targetText,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-  }
-}
+// export function keyOfUnit(fileId: string): string {
+//   const hash = createHash('sha256').update(fileId).digest('hex');
+//   return `${path.basename(fileId)}_${hash.substring(0, 5)}`;
+// }
 
-export function keyOfText(filepath: string, text: string): string {
-  const hash = createHash('sha256').update(text).digest('hex');
-  return `${path.basename(filepath)}_${hash.substring(0, 8)}`;
-}
+const MAX_CONTEXT_LENGTH = 5000;
 
+/**
+ * TextParser is a parser for plain text files. The parser will treat all the content as a single string unit, using the fileId to generate the key.
+ *
+ * Note: since it treats the whole file as a single string, file content length needs to be considered for traslation. If it's too long to exceed language model's context, translation may fail. This should be properly handled during translation.
+ *
+ * Each file represents one language, and have a structure like:
+ *
+ * [en].txt:
+ * This update is to fix the issue that the user cannot see the updated content in the app.
+ */
 export class TextParser implements ExportParser {
   async exportSource(options: {
     fileId: string;
@@ -100,12 +31,14 @@ export class TextParser implements ExportParser {
       version: '1.0',
       fileId: options.fileId,
       sourceLanguage: options.language,
-      metadata: {},
+      metadata: {
+        format: 'text',
+      },
       strings: {},
     };
 
     // We simply use the content hash as the key
-    const key = keyOfText(options.fileId, options.content);
+    const key = options.fileId;
     json.strings[key] = {
       comment: undefined,
       localizations: {
@@ -135,16 +68,22 @@ export class TextParser implements ExportParser {
         `Invalid json format for text file. Got ${Object.keys(json.strings).length} keys, expected only 1 key.`,
       );
     }
+    const expectedKey = options.fileId;
     for (const key in json.strings) {
-      const content =
-        options.content ||
-        json.strings[key].localizations[json.sourceLanguage].value;
+      if (key !== expectedKey) {
+        throw new Error(
+          `Invalid json format for text file. Got key ${key}, expected ${expectedKey}.`,
+        );
+      }
+      const state = options.content !== undefined ? 'undefined' : 'new';
+      const extractedFrom =
+        options.content !== undefined ? 'existing' : 'undefined';
       json.strings[key].localizations[options.language] = {
-        state: 'translated',
+        state,
         metadata: {
-          extractedFrom: 'existing',
+          extractedFrom,
         },
-        value: content,
+        value: options.content,
       };
     }
 

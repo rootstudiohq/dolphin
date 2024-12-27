@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 
 import { logger } from './logger.js';
+import { absoluteFilePath } from './utils.js';
 
 export enum LocalizationFormat {
   TEXT = 'text', // Plain text file
@@ -86,23 +87,41 @@ const BaseConfigSchema = z.object({
 
   translator: TranslatorConfigSchema,
   baseLanguage: z.string(),
-  exportFolder: z.string().optional(), // by default, it's .dolphin
+  exportFolder: z.string().optional(), // by default, it's .dolphin in the same folder as the config file
   globalContext: z.string().optional(),
   localizations: z.array(LocalizationConfigSchema),
 });
 
 export type Config = z.infer<typeof BaseConfigSchema>;
 
+export async function parseConfigText({
+  yamlText,
+  configPath,
+}: {
+  yamlText: string;
+  configPath: string;
+}): Promise<Config> {
+  const yaml = YAML.parse(yamlText);
+  yaml.path = configPath;
+  const result = await BaseConfigSchema.safeParseAsync(yaml);
+  if (!result.success) {
+    const validationError = fromZodError(result.error);
+    throw new Error(`Invalid config file: ${validationError}`);
+  } else {
+    const config = result.data;
+    await validateConfig(config);
+    return config;
+  }
+}
+
 export async function parseConfig(userConfigPath?: string): Promise<Config> {
-  var configPath = userConfigPath;
+  let configPath = userConfigPath;
   if (!configPath) {
     throw new Error(
       `Missing config file. You can either set using --config or put dolphin.y[a]ml under the root path of the project.`,
     );
   }
-  if (!path.isAbsolute(configPath)) {
-    configPath = path.join(process.cwd(), configPath);
-  }
+  configPath = absoluteFilePath(configPath, process.cwd());
   // Check if configPath is a directory
   const stats = await fs.promises.stat(configPath);
   if (stats.isDirectory()) {
@@ -138,20 +157,10 @@ export async function parseConfig(userConfigPath?: string): Promise<Config> {
       `Cannot read config file at ${configPath}, error: ${error}`,
     );
   }
-  const yaml = YAML.parse(fileContent);
-  yaml.path = configPath;
-  const result = await BaseConfigSchema.safeParseAsync(yaml);
-  if (!result.success) {
-    const validationError = fromZodError(result.error);
-    throw new Error(`Invalid config file: ${validationError}`);
-  } else {
-    const config = result.data;
-    validateConfig(config);
-    return config;
-  }
+  return parseConfigText({ yamlText: fileContent, configPath });
 }
 
-function validateConfig(config: Config) {
+async function validateConfig(config: Config) {
   // check if localizations has duplicate ids
   const localizationIds = new Set<string>();
   for (const localization of config.localizations) {

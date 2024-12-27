@@ -6,22 +6,26 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./xliff": "./src/xliff/index.ts",
+    "./xliff": "./src/common/xliff/index.ts",
     "./export": "./src/export/index.ts",
-    "./import": "./src/import/index.ts"
+    "./import": "./src/import/index.ts",
+    "./storage": "./src/storage/index.ts"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@repo/base": "workspace:*",
     "@bacons/xcode": "1.0.0-alpha.14",
+    "@repo/base": "workspace:*",
     "xliff": "^6.2.0",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/shelljs": "^0.8.12",
     "@repo/typescript-config": "workspace:*",
-    "vitest": "^1.1.0"
+    "@types/shelljs": "^0.8.12",
+    "vitest": "^1.1.0",
+    "@vitest/coverage-v8": "^1.1.0"
   }
 }

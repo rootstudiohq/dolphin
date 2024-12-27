@@ -1,0 +1,175 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "metadata": {
+    "format": "stringCatalog"
+  },
+  "strings": {
+    "empty": {
+      "metadata": {
+        "stringCatalogUnitType": "stringUnit"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "source"
+          }
+        },
+        "zh": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "only source": {
+      "comment": "%@ is a placeholder for the name",
+      "metadata": {
+        "stringCatalogUnitType": "stringUnit",
+        "extractionState": "extracted_with_value"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "source",
+            "state": "new"
+          },
+          "value": "Hello, %@!"
+        },
+        "zh": {
+          "state": "translated",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "existing",
+            "state": "translated"
+          },
+          "value": "你好,%@!"
+        }
+      }
+    },
+    "hello world": {
+      "metadata": {
+        "shouldTranslate": false,
+        "stringCatalogUnitType": "stringUnit",
+        "extractionState": "manual"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": true,
+          "metadata": {
+            "extractedFrom": "source"
+          }
+        },
+        "zh": {
+          "state": "translated",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "existing",
+            "state": "translated"
+          },
+          "value": "你好世界"
+        }
+      }
+    },
+    "stringset/0": {
+      "metadata": {
+        "stringCatalogUnitType": "stringSet"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "source",
+            "state": "new"
+          },
+          "value": "Hello 1"
+        },
+        "zh": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "stringset/1": {
+      "metadata": {
+        "stringCatalogUnitType": "stringSet"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "source",
+            "state": "new"
+          },
+          "value": "Hello 2"
+        },
+        "zh": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "variations/ipad": {
+      "metadata": {
+        "stringCatalogUnitType": "variations"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "source",
+            "state": "needs_review"
+          },
+          "value": "Remove"
+        },
+        "zh": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "variations/other": {
+      "metadata": {
+        "stringCatalogUnitType": "variations"
+      },
+      "localizations": {
+        "en": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "source",
+            "state": "new"
+          },
+          "value": "Remove"
+        },
+        "zh": {
+          "state": "new",
+          "skip": false,
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    }
+  }
+}

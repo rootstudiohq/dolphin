@@ -114,13 +114,10 @@ export async function translateEntities({
       for (const entity of entities) {
         if (entity.key === key) {
           for (const lang in translated) {
-            if (!entity.target) {
-              entity.target = {};
-            }
-            entity.target[lang] = {
+            entity.unit.localizations[lang] = {
+              ...entity.unit.localizations[lang],
               value: translated[lang]!,
               state: 'translated',
-              notes: entity.target[lang]?.notes || [],
             };
           }
         }

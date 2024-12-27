@@ -1,0 +1,8 @@
+/* Greeting message */
+"greeting" = "你好";
+
+/* Welcome message shown on first launch */
+"messages.welcome" = "欢迎使用我们的应用";
+
+/* Goodbye message */
+"messages.goodbye" = "再见!";

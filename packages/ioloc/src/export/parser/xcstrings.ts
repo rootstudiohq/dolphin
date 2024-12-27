@@ -1,16 +1,11 @@
 import { logger } from '@repo/base/logger';
-import fs from 'node:fs';
-import path from 'node:path';
 
 import {
   DolphinJSON,
   DolphinJSONLocalizationState,
   DolphinJSONStringUnitType,
 } from '../../storage/index.js';
-import { textHash } from '../../utils.js';
-import { encodeXliffAttributeValue } from '../../xliff/index.js';
-import { Unit, Xliff } from '../../xliff/xliff-spec.js';
-import { ExportParser, XliffExportParser } from '../index.js';
+import { ExportParser } from '../index.js';
 
 interface XCStringsStringUnit {
   state?: string; // known state: "new", "translated"
@@ -50,247 +45,6 @@ export interface XCStringsFile {
   version: string;
 }
 
-export class XliffXCStringsParser implements XliffExportParser {
-  async parse(
-    filePath: string,
-    language: string,
-    sourceFilePath: string,
-    sourceLanguage: string,
-    basePath: string,
-  ): Promise<Xliff> {
-    const fileId = textHash(sourceFilePath);
-    const xliffOriginalPath = path.relative(basePath, filePath);
-
-    const fileContent = await fs.promises.readFile(filePath, 'utf-8');
-    const xcstrings: XCStringsFile = parseXCStrings(fileContent);
-
-    if (!xcstrings.strings) {
-      logger.warn(`No strings in XCStrings file: ${filePath}`);
-      return {
-        name: 'xliff',
-        type: 'element',
-        attributes: {
-          version: '2.0',
-          srcLang: sourceLanguage,
-          trgLang: language,
-        },
-        elements: [],
-      };
-    }
-
-    const targetElements: Unit[] = [];
-
-    // for (const [key, value] of Object.entries(xcstrings.strings)) {
-    //   const comment = value.comment;
-    //   if (!value.localizations) {
-    //     const unitElements: Unit['elements'] = [];
-    //     if (comment) {
-    //       unitElements.push({
-    //         name: 'notes',
-    //         type: 'element',
-    //         elements: [
-    //           {
-    //             name: 'note',
-    //             type: 'element',
-    //             elements: [
-    //               {
-    //                 type: 'text',
-    //                 text: comment,
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       });
-    //     }
-    //     unitElements.push({
-    //       name: 'segment',
-    //       type: 'element',
-    //       attributes: {
-    //         state: 'initial',
-    //       },
-    //       elements: [
-    //         {
-    //           name: 'source',
-    //           type: 'element',
-    //           elements: [
-    //             {
-    //               type: 'text',
-    //               text: key,
-    //             },
-    //           ],
-    //         },
-    //       ],
-    //     });
-    //     targetElements.push({
-    //       name: 'unit',
-    //       type: 'element',
-    //       attributes: {
-    //         id: encodeXliffAttributeValue(`${key}-0`),
-    //         extractionState: value.extractionState,
-    //       },
-    //       elements: unitElements,
-    //     });
-    //   } else {
-    //     const sourceStringUnit =
-    //       value.localizations[sourceLanguage]?.stringUnit;
-    //     const sourceStringSet = value.localizations[sourceLanguage]?.stringSet;
-    //     if (sourceStringSet) {
-    //       const state =
-    //         sourceStringSet.state === 'translated' ? 'translated' : 'initial';
-    //       const targetStringSet = value.localizations[language]?.stringSet;
-    //       if (sourceStringSet.values) {
-    //         for (let i = 0; i < sourceStringSet.values.length; i++) {
-    //           const sourceText = sourceStringSet.values[i];
-    //           const targetText = targetStringSet?.values?.[i] || '';
-    //           const unitElements: Unit['elements'] = [];
-    //           if (comment) {
-    //             unitElements.push({
-    //               name: 'notes',
-    //               type: 'element',
-    //               elements: [
-    //                 {
-    //                   name: 'note',
-    //                   type: 'element',
-    //                   elements: [
-    //                     {
-    //                       type: 'text',
-    //                       text: comment,
-    //                     },
-    //                   ],
-    //                 },
-    //               ],
-    //             });
-    //           }
-    //           unitElements.push({
-    //             name: 'segment',
-    //             type: 'element',
-    //             attributes: {
-    //               state,
-    //             },
-    //             elements: [
-    //               {
-    //                 name: 'source',
-    //                 type: 'element',
-    //                 elements: [
-    //                   {
-    //                     type: 'text',
-    //                     text: sourceText,
-    //                   },
-    //                 ],
-    //               },
-    //               {
-    //                 name: 'target',
-    //                 type: 'element',
-    //                 elements: [
-    //                   {
-    //                     type: 'text',
-    //                     text: targetText,
-    //                   },
-    //                 ],
-    //               },
-    //             ],
-    //           });
-    //           targetElements.push({
-    //             name: 'unit',
-    //             type: 'element',
-    //             attributes: {
-    //               id: encodeXliffAttributeValue(`${key}-${i}`),
-    //               extractionState: value.extractionState,
-    //             },
-    //             elements: unitElements,
-    //           });
-    //         }
-    //       }
-    //     } else {
-    //       const sourceText = sourceStringUnit?.value || key;
-    //       const state =
-    //         sourceStringUnit?.state === 'translated' ? 'translated' : 'initial';
-    //       const targetStringUnit = value.localizations[language]?.stringUnit;
-    //       const targetText = targetStringUnit?.value || '';
-    //       const unitElements: Unit['elements'] = [];
-    //       if (comment) {
-    //         unitElements.push({
-    //           name: 'notes',
-    //           type: 'element',
-    //           elements: [
-    //             {
-    //               name: 'note',
-    //               type: 'element',
-    //               elements: [
-    //                 {
-    //                   type: 'text',
-    //                   text: comment,
-    //                 },
-    //               ],
-    //             },
-    //           ],
-    //         });
-    //       }
-    //       unitElements.push({
-    //         name: 'segment',
-    //         type: 'element',
-    //         attributes: {
-    //           state,
-    //         },
-    //         elements: [
-    //           {
-    //             name: 'source',
-    //             type: 'element',
-    //             elements: [
-    //               {
-    //                 type: 'text',
-    //                 text: sourceText,
-    //               },
-    //             ],
-    //           },
-    //           {
-    //             name: 'target',
-    //             type: 'element',
-    //             elements: [
-    //               {
-    //                 type: 'text',
-    //                 text: targetText,
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       });
-    //       targetElements.push({
-    //         name: 'unit',
-    //         type: 'element',
-    //         attributes: {
-    //           id: encodeXliffAttributeValue(`${key}-0`),
-    //           extractionState: value.extractionState,
-    //         },
-    //         elements: unitElements,
-    //       });
-    //     }
-    //   }
-    // }
-
-    return {
-      name: 'xliff',
-      type: 'element',
-      attributes: {
-        version: '2.0',
-        srcLang: sourceLanguage,
-        trgLang: language,
-      },
-      elements: [
-        {
-          name: 'file',
-          type: 'element',
-          attributes: {
-            id: fileId,
-            original: xliffOriginalPath,
-          },
-          elements: targetElements,
-        },
-      ],
-    };
-  }
-}
-
 export function parseXCStrings(content: string): XCStringsFile {
   try {
     const parsed: XCStringsFile = JSON.parse(content);
@@ -301,6 +55,16 @@ export function parseXCStrings(content: string): XCStringsFile {
   }
 }
 
+/**
+ * StringCatalogParser is a parser for Apple strings catalog files (.xcstrings). Internally, it's a predefined json format.
+ * Each file represents one language, and have a structure like:
+ *
+ * [en].xcstrings:
+ * {
+ *   "Home Title": "Home",
+ *   "Welcome Description": "Welcome to our home page"
+ * }
+ */
 export class StringCatalogParser implements ExportParser {
   async exportSource(options: {
     fileId: string;
@@ -311,7 +75,9 @@ export class StringCatalogParser implements ExportParser {
       version: '1.0',
       fileId: options.fileId,
       sourceLanguage: options.language,
-      metadata: {},
+      metadata: {
+        format: 'stringCatalog',
+      },
       strings: {},
     };
 
@@ -434,7 +200,6 @@ export class StringCatalogParser implements ExportParser {
             key: key,
             language: options.language,
             stringUnit: localization.stringUnit,
-            sourceValue: sourceValue,
           });
         } else {
           this.updateTargetWithEmpty({
@@ -497,7 +262,6 @@ export class StringCatalogParser implements ExportParser {
               json: json,
               key: key,
               language: options.language,
-              sourceValue: sourceValue,
             });
             continue;
           } else {
@@ -506,7 +270,6 @@ export class StringCatalogParser implements ExportParser {
               key: key,
               language: options.language,
               stringUnit: stringUnit,
-              sourceValue: sourceValue,
             });
           }
         } else {
@@ -646,7 +409,6 @@ export class StringCatalogParser implements ExportParser {
       json: json,
       key: key,
       language: language,
-      sourceValue: sourceValue,
     });
   }
 
@@ -657,23 +419,21 @@ export class StringCatalogParser implements ExportParser {
     shouldTranslate?: boolean;
     state?: string;
     value?: string;
-    sourceValue?: string;
   }) {
-    const { json, key, language, shouldTranslate, state, value, sourceValue } =
-      params;
+    const { json, key, language, shouldTranslate, state, value } = params;
     const parsedState = this.parseState({
       state: state,
-      default: value ? 'translated' : 'new',
+      default: value !== undefined ? 'translated' : 'new',
     });
     const shouldSkip = shouldTranslate === false;
     json.strings[key].localizations[language] = {
       state: parsedState,
       skip: shouldSkip,
       metadata: {
-        extractedFrom: value ? 'existing' : 'source',
+        extractedFrom: value !== undefined ? 'existing' : 'undefined',
         state: state,
       },
-      value: value ?? sourceValue,
+      value: value,
     };
   }
 
@@ -683,15 +443,8 @@ export class StringCatalogParser implements ExportParser {
     language: string;
     shouldTranslate?: boolean;
     stringUnit: XCStringsStringUnit;
-    sourceValue?: string;
   }) {
-    const { json, key, language, shouldTranslate, stringUnit, sourceValue } =
-      params;
-    console.log(
-      `Updating target with string unit: ${key}, unit: ${JSON.stringify(
-        stringUnit,
-      )}`,
-    );
+    const { json, key, language, shouldTranslate, stringUnit } = params;
     this.updateTargetWithValue({
       json: json,
       key: key,
@@ -699,7 +452,6 @@ export class StringCatalogParser implements ExportParser {
       shouldTranslate: shouldTranslate,
       state: stringUnit.state,
       value: stringUnit.value,
-      sourceValue: sourceValue,
     });
   }
 
@@ -707,7 +459,7 @@ export class StringCatalogParser implements ExportParser {
     state?: string;
     default: DolphinJSONLocalizationState;
   }): DolphinJSONLocalizationState {
-    if (!options.state) {
+    if (options.state === undefined) {
       return options.default;
     }
     switch (options.state) {
@@ -718,7 +470,9 @@ export class StringCatalogParser implements ExportParser {
       case 'needs_review':
         return 'translated';
       default:
-        return 'new';
+        throw new Error(
+          `Unknown state for string catalog unit: ${options.state}. Please submit an issue or PR.`,
+        );
     }
   }
 }

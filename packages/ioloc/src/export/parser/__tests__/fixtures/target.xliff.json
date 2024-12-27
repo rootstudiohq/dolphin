@@ -1,0 +1,102 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "metadata": {
+    "format": "xliff"
+  },
+  "strings": {
+    "en/namespace1/key1": {
+      "comment": "",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "Hello"
+        },
+        "zh": {
+          "state": "translated",
+          "metadata": {
+            "extractedFrom": "existing",
+            "state": "translated"
+          },
+          "value": "你好"
+        }
+      }
+    },
+    "en/namespace1/key2": {
+      "comment": "",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "An application to manipulate and process XLIFF documents"
+        },
+        "zh": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "en/namespace1/key.nested": {
+      "comment": "",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "XLIFF Data Manager"
+        },
+        "zh": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "en/namespace1/pc1": {
+      "comment": "",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "Hello \n          <pc id=\"name\" ctype=\"x-python-brace-param\">{name}</pc>"
+        },
+        "zh": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    },
+    "en/namespace1/group1/to%20'%20%22esc%3Cap%3E%20%26%20e": {
+      "comment": "special chars should be escaped",
+      "localizations": {
+        "en": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "value": "special chars"
+        },
+        "zh": {
+          "state": "new",
+          "metadata": {
+            "extractedFrom": "undefined"
+          }
+        }
+      }
+    }
+  }
+}

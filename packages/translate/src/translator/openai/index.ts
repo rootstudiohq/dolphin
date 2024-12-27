@@ -84,7 +84,7 @@ export class OpenAITranslator implements Translator {
     });
 
     for await (const s of stream.fullStream) {
-      // consume the stream so we can get the final object
+      // Empty loop to consume the stream so we can get the final object
     }
 
     const translationResponse = await stream.object;

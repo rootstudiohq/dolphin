@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "metadata": {
+    "format": "text"
+  },
+  "strings": {
+    "1": {
+      "localizations": {
+        "en": {
+          "metadata": {
+            "extractedFrom": "source"
+          },
+          "state": "new",
+          "value": "**Dolphin** is an innovative, automated internationalization (i18n) service designed to integrate seamlessly into your development pipeline, with the power of AI.\n\n<pc id=\"name\" ctype=\"x-python-brace-param\">{name}</pc>"
+        }
+      }
+    }
+  }
+}

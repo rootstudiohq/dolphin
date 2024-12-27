@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "strings": {
+    "content": {
+      "comment": null,
+      "localizations": {
+        "en": {
+          "state": "new",
+          "value": "Hello World"
+        },
+        "zh": {
+          "state": "translated",
+          "value": "你好世界"
+        }
+      }
+    }
+  }
+}

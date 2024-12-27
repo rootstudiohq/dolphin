@@ -4,7 +4,7 @@ import { logger } from '@repo/base/logger';
 import { LanguageModel, streamObject } from 'ai';
 import { z } from 'zod';
 
-import { TranslationPayload, TranslationProvider } from '.';
+import { TranslationPayload, TranslationProvider } from './provider.js';
 
 export class OpenAITranslationProvider implements TranslationProvider {
   private openai: OpenAIProvider;

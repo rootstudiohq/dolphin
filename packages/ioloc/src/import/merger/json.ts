@@ -1,76 +1,51 @@
-import { logger } from '@repo/base/logger';
-import fs from 'node:fs';
-import path from 'node:path';
+import { writeFile } from '@repo/base/utils';
 
-import { elementAsText } from '../../xliff/utils.js';
-import { Notes, Segment, Target, Unit, Xliff } from '../../xliff/xliff-spec.js';
-import { ImportMerger, MergeConfig } from '../index.js';
+import { DolphinJSON } from '../../storage/index.js';
+import { ImportMerger } from '../basic.js';
+import { getTargetValue } from './common.js';
 
-export class JsonMerger implements ImportMerger {
-  async merge(xliff: Xliff, config: MergeConfig): Promise<void> {
-    const filePath = config.targetLanguage.to;
-    // make sure output parent folder exists if not create it
-    const fileFolder = path.dirname(filePath);
-    if (!fs.existsSync(fileFolder)) {
-      await fs.promises.mkdir(fileFolder, { recursive: true });
-    }
+/**
+ * JSONMerger merges DolphinJSON into a target JSON file.
+ */
+export class JSONMerger implements ImportMerger {
+  async merge(options: {
+    json: DolphinJSON;
+    sourceFilePath: string;
+    targetLanguage: string;
+    targetFilePath: string;
+  }): Promise<void> {
+    const { json, targetLanguage, targetFilePath } = options;
 
-    const file = xliff.elements[0];
-    if (!file) {
-      logger.warn(`No xliff file element in ${filePath}`);
-      await fs.promises.writeFile(filePath, '');
-      return;
-    }
+    // Build the target JSON structure
+    const targetJson: any = {};
 
-    const units = file.elements.filter((e) => e.name === 'unit') as Unit[];
-    if (units.length === 0) {
-      logger.warn(`No unit element in ${filePath}`);
-      await fs.promises.writeFile(filePath, '');
-      return;
-    }
-    let json: any = {};
-    for (const unit of units) {
-      const segment = (unit.elements || []).find(
-        (e) => e.name === 'segment',
-      ) as Segment | undefined;
-      if (!segment) {
-        logger.warn(
-          `No segment element in ${filePath} for unit: ${JSON.stringify(unit)}`,
-        );
-        continue;
-      }
-      if (segment.attributes?.state === 'initial') {
-        logger.warn(
-          `Segment <${JSON.stringify(segment)}> state is initial in ${filePath}, skip merging`,
-        );
-        continue;
-      }
-      const target = (segment.elements || []).find(
-        (e) => e.name === 'target',
-      ) as Target | undefined;
-      let targetText = '';
-      if (target) {
-        targetText = elementAsText(target);
-      }
-      const notes = (unit.elements || []).filter(
-        (e) => e.name === 'notes',
-      ) as Notes[];
-      // json don't accept comments so we ignore them
-      const comments = notes.flatMap((note) => {
-        return note.elements.flatMap((e) => {
-          return e.elements.map((e) => e.text);
-        });
+    for (const [key, value] of Object.entries(json.strings)) {
+      const targetValue = getTargetValue({
+        json,
+        targetLanguage,
+        key,
       });
-      const keys = unit.attributes.id.split('/').map(decodeURIComponent);
-      let obj = json;
-      for (let i = 0; i < keys.length - 1; i++) {
-        if (!obj[keys[i]]) {
-          obj[keys[i]] = {};
-        }
-        obj = obj[keys[i]];
+      if (targetValue === undefined) {
+        continue;
       }
-      obj[keys[keys.length - 1]] = targetText;
+      // Split the encoded key path and decode each segment
+      const keyPath = key.split('/').map(decodeURIComponent);
+
+      // Build nested structure
+      let current = targetJson;
+      for (let i = 0; i < keyPath.length - 1; i++) {
+        const segment = keyPath[i];
+        if (!current[segment]) {
+          current[segment] = {};
+        }
+        current = current[segment];
+      }
+
+      // Set the value at the leaf node
+      current[keyPath[keyPath.length - 1]] = targetValue;
     }
-    await fs.promises.writeFile(filePath, `${JSON.stringify(json, null, 2)}\n`);
+
+    // Write the result to file
+    await writeFile(targetFilePath, `${JSON.stringify(targetJson, null, 2)}\n`);
   }
 }

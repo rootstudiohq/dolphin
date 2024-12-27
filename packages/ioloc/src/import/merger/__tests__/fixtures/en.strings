@@ -1,0 +1,8 @@
+/* Greeting message */
+"greeting" = "Hello";
+
+/* Welcome message shown on first launch */
+"messages.welcome" = "Welcome to our app";
+
+/* Goodbye message */
+"messages.goodbye" = "Goodbye!"; 

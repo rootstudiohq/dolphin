@@ -1,154 +1,192 @@
 import input from '@inquirer/input';
 import select from '@inquirer/select';
-import { Config, TranslatorConfig } from '@repo/base/config';
+import { Config } from '@repo/base/config';
 import { logger } from '@repo/base/logger';
 import { Spinner } from '@repo/base/spinner';
-import { Xliff, parseXliff2Path } from '@repo/ioloc/xliff';
+import { writeFile } from '@repo/base/utils';
+import {
+  DOLPHIN_JSON_FILE_NAME,
+  DolphinJSON,
+  readDolphinJSON,
+} from '@repo/ioloc/storage';
 import chalk from 'chalk';
-import fetch from 'node-fetch';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {
-  LOCALITION_REVIEW_SUBSTATE_DECLINED,
-  LOCALITION_REVIEW_SUBSTATE_REFINE_NEEDED,
-  LOCALIZATION_STATE_FINAL,
-  LOCALIZATION_STATE_INITIAL,
-  LOCALIZATION_STATE_REVIEWED,
-  LocalizationEntity,
-  LocalizationEntityDictionary,
-  convertXliffsToEntities,
-  mergePreviousTranslatedXliff,
-  writeTranslatedStringsToExistingFile,
-} from './entity.js';
+import { LocalizationEntity, LocalizationEntityDictionary } from './entity.js';
 import { DolphinAPITranslator } from './translator/dolphin/index.js';
 import { Translator } from './translator/index.js';
 import { OpenAITranslator } from './translator/openai/index.js';
+import { mergeDolphinJsons } from './utils.js';
 
 export enum TranslationMode {
   AUTOMATIC = 'automatic', // No user interaction needed. The program will find the most suitable translation for each string.
   INTERACTIVE = 'interactive', // Ask user for confirmation for each string translation.
 }
 
-// Example bundle structure:
-// - bundlePath
-// | - abcd1234
-// |   | - en.xliff
-// |   | - zh-Hans.xliff
-// | - efgh5678
-//     | - ja.xliff
+/**
+ * Translate all dolphin.json files in a bundle in place.
+ *
+ * Example bundle structure:
+ * - bundlePath
+ * | - id1
+ * |   | - dolphin.json
+ * | - id2
+ *     | - dolphin.json
+ */
 export async function translateBundle(
   bundlePath: string,
   config: Config,
   spinner?: Spinner,
-): Promise<{
-  mergedStrings: LocalizationEntityDictionary;
-  additionalInfo: any;
-}> {
+): Promise<void> {
   const subfolders = await fs.promises.readdir(bundlePath, {
     withFileTypes: true,
   });
   const subfolderNames = subfolders
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name);
-  let xliffFilePaths: string[] = [];
+  let jsonFilePaths: string[] = [];
   for (const subfolderName of subfolderNames) {
     const subfolder = path.join(bundlePath, subfolderName);
-    const xliffFiles = await fs.promises.readdir(subfolder, {
+    const files = await fs.promises.readdir(subfolder, {
       withFileTypes: true,
     });
-    const xliffFileNames = xliffFiles
-      .filter((dirent) => dirent.isFile() && dirent.name.endsWith('.xliff'))
+    const jsonFileNames = files
+      .filter((dirent) => dirent.isFile() && dirent.name === 'dolphin.json')
       .map((dirent) => dirent.name);
-    xliffFilePaths.push(
-      ...xliffFileNames.map((fileName) => path.join(subfolder, fileName)),
+    if (jsonFileNames.length === 0) {
+      logger.warn(`No dolphin.json found in ${subfolder}`);
+      continue;
+    }
+    jsonFilePaths.push(
+      ...jsonFileNames.map((fileName) => path.join(subfolder, fileName)),
     );
   }
-  var xliffs: Xliff[] = [];
-  for (const xliffFilePath of xliffFilePaths) {
-    const doc = await parseXliff2Path(xliffFilePath);
-    const extracted = doc.elements;
-    xliffs.push(...extracted);
+  for (const jsonFilePath of jsonFilePaths) {
+    logger.info(`[${jsonFilePath}] Translating...`);
+    const json = await readDolphinJSON(jsonFilePath);
+    const res = await translateDolphinJson({
+      json,
+      config,
+      spinner,
+    });
+    if (!res) {
+      logger.info(`[${jsonFilePath}] No strings found, skipping translation`);
+      continue;
+    }
+    const newJson = res.json;
+    // update lastTranslatedAt metadata
+    if (!newJson.metadata) {
+      newJson.metadata = {};
+    }
+    newJson.metadata.lastTranslatedAt = new Date().toISOString();
+    mergeDolphinJsons({ newJson, previousJson: json });
+    logger.info(
+      `[${jsonFilePath}] Saving translated dolphin.json: ${JSON.stringify(newJson, null, 2)}`,
+    );
+    await writeFile(jsonFilePath, JSON.stringify(newJson, null, 2));
   }
-  logger.info(`Merging ${xliffs.length} parsed files`);
-  const mergedStrings = convertXliffsToEntities(xliffs);
+}
+
+export async function mergeBundles({
+  newBundleFolder,
+  previousBundleFolder,
+}: {
+  newBundleFolder: string;
+  previousBundleFolder: string;
+}) {
+  if (!fs.existsSync(previousBundleFolder)) {
+    logger.info(
+      `No previous bundle found at ${previousBundleFolder}. No need to merge.`,
+    );
+    return;
+  }
+
+  const dolphinJsonFilePath = path.join(
+    newBundleFolder,
+    DOLPHIN_JSON_FILE_NAME,
+  );
+  const previousDolphinJsonFilePath = path.join(
+    previousBundleFolder,
+    DOLPHIN_JSON_FILE_NAME,
+  );
+
+  if (!fs.existsSync(previousDolphinJsonFilePath)) {
+    logger.info(
+      `No previous dolphin.json file found at ${previousDolphinJsonFilePath}. Skip merging.`,
+    );
+    return;
+  }
+
+  const newJson = await readDolphinJSON(dolphinJsonFilePath);
+  const previousJson = await readDolphinJSON(previousDolphinJsonFilePath);
+
+  // Merge the files
+  mergeDolphinJsons({ newJson, previousJson });
+
+  // Write back the merged content
+  await writeFile(dolphinJsonFilePath, JSON.stringify(newJson, null, 2));
+}
+
+async function translateDolphinJson({
+  json,
+  config,
+  spinner,
+}: {
+  json: DolphinJSON;
+  config: Config;
+  spinner?: Spinner;
+}): Promise<{
+  json: DolphinJSON;
+  additionalInfo: any;
+} | null> {
+  logger.info(`[${json.fileId}] Translating dolphin.json...`);
   let untranslatedMergedStrings: LocalizationEntityDictionary = {};
-  for (const [key, entity] of Object.entries(mergedStrings)) {
+  // deep clone json
+  const newJson: DolphinJSON = JSON.parse(JSON.stringify(json));
+  for (const [key, value] of Object.entries(newJson.strings)) {
+    const entity = new LocalizationEntity({
+      key,
+      sourceLanguage: newJson.sourceLanguage,
+      unit: value,
+    });
     if (entity.untranslatedLanguages.length > 0) {
       untranslatedMergedStrings[key] = entity;
     }
   }
   const count = Object.keys(untranslatedMergedStrings).length;
+  logger.info(`[${newJson.fileId}] ${count} strings to be translated`);
   spinner?.succeed(
     chalk.green(
-      `${count} strings to be translated, total: ${
-        Object.keys(mergedStrings).length
+      `[${newJson.fileId}] ${count} strings to be translated, total: ${
+        Object.keys(newJson.strings).length
       }\n`,
     ),
   );
   if (count === 0) {
-    logger.info(`No strings found, skipping translation`);
-    return {
-      mergedStrings: {},
-      additionalInfo: {},
-    };
+    logger.info(`[${newJson.fileId}] No strings found, skipping translation`);
+    return null;
   }
-  logger.info(`Strings to be translated: ${JSON.stringify(mergedStrings)}`);
+  logger.info(
+    `[${newJson.fileId}] Strings to be translated: ${JSON.stringify(
+      untranslatedMergedStrings,
+    )}`,
+  );
   const res = await translateStrings(
-    mergedStrings,
+    untranslatedMergedStrings,
     config,
     spinner,
-    // mode,
-    // baseLanguage
   );
-  await mergeTranslatedFile(
-    xliffFilePaths,
-    res.mergedStrings,
-    config.translator,
-  );
-  return res;
-}
-
-export async function mergeBundles(
-  bundlePath: string,
-  previousBundlePath: string,
-) {
-  if (!fs.existsSync(previousBundlePath)) {
-    logger.info(
-      `No previous bundle found at ${previousBundlePath}. No need to merge.`,
-    );
-    return;
+  // create new json with translated strings
+  // deep clone json
+  for (const [key, entity] of Object.entries(res.mergedStrings)) {
+    logger.info(`[${key}] Updating unit: ${JSON.stringify(entity.unit)}`);
+    newJson.strings[key] = entity.unit;
   }
-  const subfolders = await fs.promises.readdir(bundlePath, {
-    withFileTypes: true,
-  });
-  const subfolderNames = subfolders
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name);
-  logger.info(`Found subfolders: ${subfolderNames} under ${bundlePath}`);
-  for (const subfolderName of subfolderNames) {
-    const subfolder = path.join(bundlePath, subfolderName);
-    const xliffFiles = await fs.promises.readdir(subfolder, {
-      withFileTypes: true,
-    });
-    const xliffFileNames = xliffFiles
-      .filter((dirent) => dirent.isFile() && dirent.name.endsWith('.xliff'))
-      .map((dirent) => dirent.name);
-    logger.info(`Found xliff files: ${xliffFileNames} under ${subfolderName}`);
-    for (const xliffFileName of xliffFileNames) {
-      const xliffFilePath = path.join(subfolder, xliffFileName);
-      const previousXliffFilePath = path.join(
-        path.join(previousBundlePath, subfolderName),
-        xliffFileName,
-      );
-      if (!fs.existsSync(previousXliffFilePath)) {
-        logger.info(
-          `No previous xliff file found at ${previousXliffFilePath}. Skip merging.`,
-        );
-      }
-      await mergePreviousTranslatedXliff(xliffFilePath, previousXliffFilePath);
-    }
-  }
+  return {
+    json: newJson,
+    additionalInfo: res.additionalInfo,
+  };
 }
 
 async function translateStrings(
@@ -238,20 +276,20 @@ async function translateStrings(
         if (config.globalContext) {
           message += `[Context]:\n${config.globalContext}\n\n`;
         }
-        message += `${chalk.yellow(`${entity.source.code} (Source)`)}\n${
-          entity.source.value
+        message += `${chalk.yellow(`${entity.sourceText} (Source)`)}\n${
+          entity.sourceText
         }\n`;
-        const notes = entity.allNotes;
-        if (notes.length > 0) {
+        const allComments = entity.allComments;
+        if (allComments.length > 0) {
           message += `Notes:\n`;
-          for (const note of notes) {
-            message += `• ${note}\n`;
+          for (const comment of allComments) {
+            message += `• ${comment}\n`;
           }
           message += `\n`;
         }
-        for (const lang in entity.target) {
-          const target = entity.target[lang]!;
-          if (target.state === LOCALIZATION_STATE_FINAL) {
+        for (const lang of entity.targetLanguages) {
+          const target = entity.unit.localizations[lang]!;
+          if (target.state === 'new') {
             message += `${chalk.green(lang)} [Skipped]\n${target.value}\n`;
           } else {
             message += `${chalk.red(lang)}\n${target.value}\n`;
@@ -268,13 +306,13 @@ async function translateStrings(
               },
               {
                 name: 'Retry with Suggestions',
-                value: LOCALITION_REVIEW_SUBSTATE_REFINE_NEEDED,
+                value: 'refineNeeded',
                 description:
                   'Type in suggestions and it will be translated again afterwards',
               },
               {
                 name: 'Decline',
-                value: LOCALITION_REVIEW_SUBSTATE_DECLINED,
+                value: 'declined',
                 description: 'The translation will be discarded',
               },
               {
@@ -289,14 +327,14 @@ async function translateStrings(
           },
         );
         if (reviewResult === 'approved') {
-          entity.updateState(LOCALIZATION_STATE_FINAL);
+          entity.updateState('reviewed', 'approved');
           reviewed.push(entity);
           approved += 1;
-        } else if (reviewResult === LOCALITION_REVIEW_SUBSTATE_DECLINED) {
-          entity.updateState(LOCALIZATION_STATE_INITIAL, reviewResult);
+        } else if (reviewResult === 'declined') {
+          entity.updateState('new', 'declined');
           reviewed.push(entity);
           declined += 1;
-        } else if (reviewResult === LOCALITION_REVIEW_SUBSTATE_REFINE_NEEDED) {
+        } else if (reviewResult === 'refineNeeded') {
           // ask for suggestions
           spinner?.stop({ persist: true });
           const auditSuggestion = await input(
@@ -308,8 +346,8 @@ async function translateStrings(
               clearPromptOnDone: true,
             },
           );
-          entity.updateState(LOCALIZATION_STATE_INITIAL, reviewResult);
-          entity.addNotes([auditSuggestion]);
+          entity.updateState('new', 'refineNeeded');
+          entity.addAdditionalComments([auditSuggestion]);
           remainings.push(entity);
           refineNeeded += 1;
         } else if (reviewResult === 'approveAll') {
@@ -338,19 +376,10 @@ async function translateStrings(
   }
 
   logger.info(`Translated file: ${JSON.stringify(mergedStrings)}`);
+  const additionalInfo = translator.additionalInfo();
+  logger.info(`Additional info: ${JSON.stringify(additionalInfo)}`);
   return {
     mergedStrings,
-    additionalInfo: translator.additionalInfo(),
+    additionalInfo,
   };
-}
-
-async function mergeTranslatedFile(
-  xliffFilePaths: string[],
-  translatedStrings: LocalizationEntityDictionary,
-  translator: TranslatorConfig,
-) {
-  logger.info(`Merging translated file...`);
-  for (const filePath of xliffFilePaths) {
-    await writeTranslatedStringsToExistingFile(translatedStrings, filePath);
-  }
 }

@@ -1,12 +1,11 @@
 import { Config, LocalizationFormat, parseConfig } from '@repo/base/config';
 import { consoleLogger, logger } from '@repo/base/logger';
 import spinner from '@repo/base/spinner';
+import { absoluteFilePath } from '@repo/base/utils';
 import { createTemporaryOutputFolder, replaceBundle } from '@repo/ioloc';
 import {
-  LocalizationBundlePath,
   exportLocalizationBundle,
   importLocalizationBundle,
-  textHash,
 } from '@repo/ioloc';
 import { mergeBundles, translateBundle } from '@repo/translate';
 import chalk from 'chalk';
@@ -38,24 +37,30 @@ export async function loadConfig({ path }: { path?: string }) {
 
 export async function exportLocalizations(config: Config) {
   var startTime = performance.now();
-  const message =
+  const exportingMessage =
     config.localizations.filter((x) => x.format === LocalizationFormat.XCODE)
       .length > 0
-      ? `Exporting localizations (Xcode project may take a while)`
+      ? `Exporting localizations (Xcode project takes a while since it needs to be built)`
       : 'Exporting localizations';
-  spinner.update(message).start();
+  spinner.update(exportingMessage).start();
   const baseFolder = path.dirname(config.path);
-  var exportedResults: LocalizationBundlePath[] = [];
-  let baseOutputFolder = config.exportFolder || '.dolphin';
-  if (!path.isAbsolute(baseOutputFolder)) {
-    baseOutputFolder = path.join(baseFolder, baseOutputFolder);
-  }
+  var exportedResults: {
+    id: string;
+    path: string;
+    meta?: {
+      intermediateBundlePath?: string;
+    };
+  }[] = [];
+  const baseOutputFolder = absoluteFilePath(
+    config.exportFolder || '.dolphin',
+    baseFolder,
+  );
   const temporaryOutputFolder = await createTemporaryOutputFolder();
   for (const localizationConfig of config.localizations) {
     // export to temporary folder first and then merge into baseOutputFolder
     let outputFolder = path.join(
       temporaryOutputFolder,
-      localizationFolder(localizationConfig.id),
+      localizationFolderName(localizationConfig.id),
     );
     const exportResult = await exportLocalizationBundle({
       config: localizationConfig,
@@ -63,11 +68,23 @@ export async function exportLocalizations(config: Config) {
       baseFolder,
       outputFolder,
     });
-    exportedResults.push(exportResult);
+    exportedResults.push({
+      id: localizationConfig.id,
+      path: exportResult.outputFolder,
+      meta: exportResult.meta,
+    });
   }
-  const bundlePaths = exportedResults.map((result) => result.bundlePath);
-  logger.info(`Merging previous translations...`);
-  await mergeBundles(temporaryOutputFolder, baseOutputFolder);
+  const exportedBundlePaths = exportedResults.map((result) => result.path);
+  logger.info(`Merging with previous translations...`);
+  for (const result of exportedResults) {
+    logger.info(`Merging ${result.id}...`);
+    const newBundleFolder = path.join(temporaryOutputFolder, result.id);
+    const previousBundleFolder = path.join(baseOutputFolder, result.id);
+    await mergeBundles({
+      newBundleFolder,
+      previousBundleFolder,
+    });
+  }
   logger.info(
     `Base output folder: ${baseOutputFolder}, temporary output folder: ${temporaryOutputFolder}`,
   );
@@ -78,19 +95,17 @@ export async function exportLocalizations(config: Config) {
       `${exportedResults.length} localization bundles exported (${duration})`,
     ),
   );
-  consoleLogger.info(chalk.gray(`${JSON.stringify(bundlePaths, null, 2)}\n`));
+  consoleLogger.info(
+    chalk.gray(`${JSON.stringify(exportedBundlePaths, null, 2)}\n`),
+  );
   logger.info(
     `Exported ${
       exportedResults.length
-    } localization bundles at ${exportedResults
-      .map((result) => result.bundlePath)
-      .join(', ')}`,
+    } localization bundles at ${exportedBundlePaths.join(', ')}`,
   );
   return {
     baseOutputFolder,
-    intermediateBundlePaths: exportedResults.map(
-      (x) => x.intermediateBundlePath,
-    ),
+    exportedResults,
   };
 }
 
@@ -106,41 +121,22 @@ export async function translateLocalizations({
     logging: false,
   });
   logger.info(`Translating localization bundle at ${baseOutputFolder}`);
-  const translationResult = await translateBundle(
-    baseOutputFolder,
-    config,
-    spinner,
-  );
-  const translated = translationResult.mergedStrings;
-  const translatedCount = Object.keys(translated).length;
-  if (translatedCount === 0) {
-    spinner.succeed(chalk.green('No string needs to be translated\n'));
-    return;
-  }
+  await translateBundle(baseOutputFolder, config, spinner);
   const duration = formattedDuration(performance.now() - startTime);
-  spinner.succeed(
-    chalk.green(
-      `Finished translation process for ${translatedCount} strings (${duration})`,
-    ),
-  );
-  logger.log({
-    console: true,
-    level: 'info',
-    message: chalk.gray(
-      `${JSON.stringify(translationResult.additionalInfo, null, 2)}\n`,
-    ),
-  });
-  logger.info(`Finished translating localization bundle`);
+  spinner.succeed(chalk.green(`Finished translation process (${duration})\n`));
 }
 
 export async function importLocalizations({
   config,
   translationBundle,
+  metas,
 }: {
   config: Config;
-  translationBundle: {
-    baseOutputFolder: string;
-    intermediateBundlePaths: (string | undefined)[];
+  translationBundle: string;
+  metas: {
+    [key: string]: {
+      intermediateBundlePath?: string;
+    };
   };
 }) {
   const startTime = performance.now();
@@ -156,18 +152,15 @@ export async function importLocalizations({
   for (var index = 0; index < config.localizations.length; index++) {
     const localizationConfig = config.localizations[index];
     const bundlePath = path.join(
-      translationBundle.baseOutputFolder,
-      localizationFolder(localizationConfig.id),
+      translationBundle,
+      localizationFolderName(localizationConfig.id),
     );
     await importLocalizationBundle({
       config: localizationConfig,
-      localizationBundlePath: {
-        bundlePath,
-        intermediateBundlePath:
-          translationBundle.intermediateBundlePaths[index],
-      },
+      localizationBundlePath: bundlePath,
       baseLanguage: config.baseLanguage,
       baseFolder: path.dirname(config.path),
+      meta: metas[localizationConfig.id],
     });
   }
   const duration = formattedDuration(performance.now() - startTime);
@@ -182,6 +175,6 @@ export function formattedDuration(duration: number) {
   }
 }
 
-function localizationFolder(id: string) {
-  return textHash(id).slice(0, 8);
+function localizationFolderName(id: string) {
+  return id;
 }
