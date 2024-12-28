@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.0.2
+
+### Patch Changes
+
+- ef203f0: Exclude base language when exporting localization strings
+
 ## 1.0.1
 
 ### Patch Changes
