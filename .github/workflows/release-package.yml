@@ -8,7 +8,11 @@ env:
   CI: true
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   release:
+    needs: test # Ensure tests pass before releasing
     timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
