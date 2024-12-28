@@ -26,7 +26,7 @@ The process is simple to understand:
 Install Dolphin globally with npm/pnpm/yarn:
 
 ```shell
-npm install -g @icodesign/dolphin
+npm install -g @rootapp/dolphin
 ```
 
 Check if the installation is successful by running:
