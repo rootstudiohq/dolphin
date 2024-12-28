@@ -1,5 +1,5 @@
 {
-  "name": "@icodesign/dolphin-api",
+  "name": "@rootapp/dolphin-api-example",
   "version": "0.2.0",
   "private": true,
   "scripts": {

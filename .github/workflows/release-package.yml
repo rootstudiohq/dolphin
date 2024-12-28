@@ -41,6 +41,7 @@ jobs:
         with:
           commit: 'CI: Version Packages'
           title: 'CI: Version Packages'
+          version: pnpm ci:version
           publish: pnpm ci:publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
