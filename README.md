@@ -78,11 +78,9 @@ The `api` translator is a built-in translator that uses the Dolphin API (or comp
 >
 > You can deploy the API service to your own server or managed platforms (like Vercel) and change the `baseUrl` to your server address.
 >
-> Deploy to Vercel with a single click:
->
-> [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ficodesign%2Fdolphin&env=OPENAI_API_KEY&envDescription=The%20openai%20api%20key&envLink=https%3A%2F%2Fplatform.openai.com%2Fapi-keys)
+> Note: the provided code is just for demo purpose, it's not production ready. You should use at your own risk.
 
-You can also implement your own API server if needed.
+We also provide a hosted API service for you to use. Currently it's still in closed testing phase. If you're interested, please contact me. (You should be smart enough to find my email address.)
 
 ### Running Dolphin
 
