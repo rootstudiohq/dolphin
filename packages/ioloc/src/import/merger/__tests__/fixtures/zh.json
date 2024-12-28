@@ -1,0 +1,7 @@
+{
+  "greeting": "你好",
+  "messages": {
+    "welcome": "欢迎使用我们的应用",
+    "goodbye": "再见!"
+  }
+}

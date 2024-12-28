@@ -1,0 +1,12 @@
+"Title" = "Dolphin Demo App";
+
+/* Dolphin is a specific term and shouldn't be translated. */
+"Introduction" = "Dolphin is an i18n service transforming apps and websites with effortless localization to unleash global possibilities and embrace a borderless digital experience.";
+
+"Author Introduction %@ %lld" = "%1$@ is the author who wrote only %2$lld lines of code.";
+
+/* Button action title for users to create a a message. */
+"New Message [Verb]" = "New\nMessage";
+
+/* Title to indicate the user there's a new message ready */
+"New Message [Noun] \"%@\"" = "New message from \"%@\"";

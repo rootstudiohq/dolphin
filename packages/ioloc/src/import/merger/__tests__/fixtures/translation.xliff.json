@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "fileId": "1",
+  "sourceLanguage": "en",
+  "strings": {
+    "en/file.ext/greeting": {
+      "comment": "A simple greeting",
+      "localizations": {
+        "en": {
+          "state": "translated",
+          "value": "Hello"
+        },
+        "zh": {
+          "state": "translated",
+          "value": "你好"
+        }
+      }
+    },
+    "en/file.ext/farewell": {
+      "comment": "A farewell message",
+      "localizations": {
+        "en": {
+          "state": "translated",
+          "value": "Goodbye"
+        },
+        "zh": {
+          "state": "translated",
+          "value": "再见"
+        }
+      }
+    }
+  }
+}

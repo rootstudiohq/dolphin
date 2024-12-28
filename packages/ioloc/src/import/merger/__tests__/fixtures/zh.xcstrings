@@ -1,0 +1,42 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "greeting": {
+      "comment": "Greeting message",
+      "extractionState": "manual",
+      "localizations": {
+        "zh": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你好"
+          }
+        }
+      }
+    },
+    "messages.welcome": {
+      "comment": "Welcome message shown on first launch",
+      "extractionState": "manual",
+      "localizations": {
+        "zh": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "欢迎使用我们的应用"
+          }
+        }
+      }
+    },
+    "messages.goodbye": {
+      "comment": "Goodbye message",
+      "extractionState": "manual",
+      "localizations": {
+        "zh": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再见!"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+} 

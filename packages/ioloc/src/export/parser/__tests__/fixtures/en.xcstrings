@@ -1,0 +1,72 @@
+{
+  "version" : "1.0",
+  "sourceLanguage" : "en",
+  "strings" : {
+    "empty": {},
+    "only source": {
+      "extractionState" : "extracted_with_value",
+      "comment" : "%@ is a placeholder for the name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hello, %@!"
+          }
+        },
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你好,%@!"
+          }
+        }
+      }
+    },
+    "hello world" : {
+      "extractionState" : "manual",
+      "shouldTranslate" : false,
+      "localizations" : {
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你好世界"
+          }
+        }
+      }
+    },
+    "stringset": {
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Hello 1",
+              "Hello 2"
+            ]
+          }
+        }
+      }
+    },
+    "variations": {
+      "localizations": {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Remove"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Remove"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

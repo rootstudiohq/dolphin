@@ -1,0 +1,9 @@
+baseLanguage: en
+translator:
+  agent: api
+  baseUrl: http://localhost:3000/v1/
+  mode: interactive
+localizations:
+  - id: app
+    path: XcodeDemo.xcodeproj
+    format: xcode

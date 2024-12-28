@@ -1,0 +1,10 @@
+baseLanguage: en-US
+translator:
+  agent: openai
+  mode: interactive
+localizations:
+  - id: web
+    path: apps/web/messages/${LANGUAGE}.json
+    format: json
+    languages:
+      - zh-CN

@@ -1,0 +1,20 @@
+"test-normal" = "Test normal";
+
+/* With placeholder characters */
+"test-placeholder" = "Hello test \"%@\"";
+/* With xml characters */
+"test-xml-chars" = "<p>测一测</p>";
+
+/* Escaped new lines */
+"test-new-lines" = "Test\nNew\nLines";
+
+/* Escaped quotes */
+"test-quotes" = "\"测试引用\"";
+
+/* Multiline Value */
+"test-multiline-value" = "Test
+multiline
+value";
+
+/* Outlier value */
+"test-outlier" = "Outlier";

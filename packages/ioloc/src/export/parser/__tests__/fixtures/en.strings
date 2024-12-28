@@ -1,0 +1,51 @@
+"test-normal" = "Test normal";
+
+/* With xml characters */
+"test-xml-chars" = "<p>test</p>";
+
+
+/* With placeholder characters */
+"test-placeholder" = "Hello test \"%@\"";
+/* Special characters */
+"test-chars" = "Olvidé mi contraseña";
+
+/* Escaped new lines */
+"test-new-lines" = "Test\nNew\nLines";
+
+/* Escaped quotes */
+"test-quotes" = "\"Test quote\"";
+
+/* Quote and semicolon case */
+"test-semicolon" = "Test \"; semicolon";
+
+/* Messed up spacing */
+  "test-spacing"   =   "Test spacing"  ;
+
+/* Edge case */
+  "test \n edge\" = " = "Test edge"  ;
+
+/* Multiline
+   Comment */
+"test-multiline-comment" = "Test multiline comment";
+
+/* Multiline Value */
+"test-multiline-value" = "Test
+multiline
+value";
+
+/* Multiline Value with space */
+"test-multiline-value-with-space" = "Test
+multiline
+
+with
+
+empty space
+value";
+
+/* Multiline Value with comment */
+"test-multiline-value-with-comment" = "Test
+multiline
+value
+with comment
+/* comment */
+";

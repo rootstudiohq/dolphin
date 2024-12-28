@@ -1,0 +1,26 @@
+{
+  "name": "dolphin",
+  "private": true,
+  "description": "Dolphin is an innovative, automated internationalization (i18n) service designed to integrate seamlessly into your development pipeline.",
+  "author": "Lance Wang (icodesign)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rootstudiodev/dolphin.git"
+  },
+  "scripts": {
+    "release": "pnpm changeset",
+    "ci:version": "pnpm changeset version",
+    "ci:publish": "pnpm publish -r --access public"
+  },
+  "dependencies": {
+    "typescript": "^5.5.0"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.7",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "clean-publish": "^5.0.0",
+    "prettier": "^3.3.0"
+  },
+  "packageManager": "pnpm@9.15.1"
+}

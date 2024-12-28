@@ -1,0 +1,44 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="en">
+  <file id="namespace1">
+  <!-- comment a 
+    -->
+    <unit id="key1">
+      <segment>
+        <source>Hello</source>
+        <target>Hello</target>
+      </segment>
+    </unit>
+    <unit id="key2">
+      <segment>
+        <source>An application to manipulate and process XLIFF documents</source>
+        <target>An application to manipulate and process XLIFF documents</target>
+      </segment>
+    </unit>
+    <unit id="key.nested">
+      <segment>
+        <source>XLIFF Data Manager</source>
+      </segment>
+    </unit>
+    <unit id="pc1">
+      <segment>
+        <source>Hello 
+          <pc id="name" ctype="x-python-brace-param">{name}</pc>
+        </source>
+        <target>Hello 
+          <pc id="name" ctype="x-python-brace-param">{name}</pc>
+        </target>
+      </segment>
+    </unit>
+    <group id="group1">
+      <unit id="to &apos; &quot;esc&lt;ap&gt; &amp; e">
+        <notes>
+          <note>special chars should be escaped</note>
+        </notes>
+        <segment>
+          <source>special chars</source>
+          <target>special chars</target>
+        </segment>
+      </unit>
+    </group>
+  </file>
+</xliff>

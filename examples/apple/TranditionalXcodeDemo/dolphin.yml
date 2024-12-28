@@ -1,0 +1,11 @@
+baseLanguage: en
+translator:
+  agent: openai
+localizations:
+  - id: app
+    path: TranditionalXcodeDemo/${LANGUAGE}.lproj/Localizable.strings
+    format: strings
+    languages:
+      - fr
+      - ja
+      - zh-Hans

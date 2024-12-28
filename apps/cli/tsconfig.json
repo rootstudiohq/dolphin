@@ -1,0 +1,5 @@
+{
+  "extends": "@repo/typescript-config/lib.json",
+  "include": ["src", "tsup.config.ts"],
+  "exclude": ["dist", "node_modules"]
+}

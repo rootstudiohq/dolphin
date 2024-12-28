@@ -1,0 +1,42 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "greeting": {
+      "comment": "Greeting message",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hello"
+          }
+        }
+      }
+    },
+    "messages.welcome": {
+      "comment": "Welcome message shown on first launch",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to our app"
+          }
+        }
+      }
+    },
+    "messages.goodbye": {
+      "comment": "Goodbye message",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goodbye!"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+} 

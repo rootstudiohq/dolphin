@@ -1,0 +1,65 @@
+{
+  "name": "@rootapp/dolphin",
+  "version": "0.1.0",
+  "main": "./dist/index.cjs",
+  "bin": "./bin/cli.cjs",
+  "type": "module",
+  "description": "Dolphin is an innovative, automated internationalization (i18n) service designed to integrate seamlessly into your development pipeline.",
+  "author": "Lance Wang (icodesign)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rootstudiohq/dolphin.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "directory": "package"
+  },
+  "clean-publish": {
+    "withoutPublish": true,
+    "tempDir": "package"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsup",
+    "dev": "tsc -w --preserveWatchOutput",
+    "start": "pnpm build && node dist/index.cjs",
+    "start:debug": "pnpm build && node --inspect-brk dist/index.cjs",
+    "prepublishOnly": "rm -rf ./package && pnpm build && clean-publish --fields 'dependencies,publishConfig' && cp ../../README.md ../../LICENSE ./package",
+    "postpublish": "rm -rf ./package",
+    "pkg:mac": "NODE_ENV=production pkg . --no-bytecode --public-packages '*' --public --targets node18-macos-x64,node18-macos-arm64 -o dist/bin/dolphin-macos",
+    "pkg:mac:compressed": "NODE_ENV=production pkg . --no-bytecode --public-packages '*' --public --targets node18-macos-x64,node18-macos-arm64 --compress Brotli -o dist/bin/dolphin-macos"
+  },
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "localization",
+    "l10n",
+    "ai",
+    "artificial intelligence",
+    "translation",
+    "nlp",
+    "dolphin"
+  ],
+  "dependencies": {
+    "@repo/base": "workspace:*",
+    "@repo/ioloc": "workspace:*",
+    "@repo/translate": "workspace:*",
+    "chalk": "^5.3.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^20.5.4",
+    "@types/yargs": "^17.0.24",
+    "esbuild": "^0.19.10",
+    "pkg": "^5.8.1",
+    "rimraf": "^5.0.1",
+    "rollup": "^4.9.1",
+    "tsup": "^8.0.1",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
