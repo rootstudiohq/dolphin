@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.0.0
+
+### Major Changes
+
+- b86a7cd: Initial release
+
 ## 0.7.0
 
 ### Minor Changes
