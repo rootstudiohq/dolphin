@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.0.1
+
+### Patch Changes
+
+- dd321c1: Update release command
+
 ## 1.0.0
 
 ### Major Changes
