@@ -109,6 +109,17 @@ export async function parseConfigText({
     throw new Error(`Invalid config file: ${validationError}`);
   } else {
     const config = result.data;
+    // exclude base language from languages array
+    const baseLanguage = config.baseLanguage;
+    config.localizations = config.localizations.map((localization) => {
+      // if has languages, exclude base language
+      if ('languages' in localization) {
+        localization.languages = localization.languages.filter(
+          (language) => language !== baseLanguage,
+        );
+      }
+      return localization;
+    });
     await validateConfig(config);
     return config;
   }

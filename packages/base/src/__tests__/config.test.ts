@@ -107,7 +107,7 @@ localizations:
       id: 'text',
       path: './translations',
       format: LocalizationFormat.TEXT,
-      languages: ['en', 'es', 'fr'],
+      languages: ['es', 'fr'],
     });
 
     // Cleanup
@@ -260,6 +260,32 @@ localizations:
       expect(config).toMatchObject({
         exportFolder: './translations',
         globalContext: 'This is a global context',
+      });
+    });
+
+    it('should exclude base language from languages array', async () => {
+      const configContent = `
+baseLanguage: en
+translator:
+  agent: openai
+  mode: automatic
+localizations:
+  - id: text
+    path: ./translations
+    format: text
+    languages: ['en', 'es', 'fr', 'de']
+`;
+
+      const config = await parseConfigText({
+        yamlText: configContent,
+        configPath: '/virtual/dolphin.yml',
+      });
+
+      expect(config.localizations[0]).toMatchObject({
+        id: 'text',
+        path: './translations',
+        format: LocalizationFormat.TEXT,
+        languages: ['es', 'fr', 'de'],
       });
     });
   });
