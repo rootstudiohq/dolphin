@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.1.1
+
+### Patch Changes
+
+- bb493df: Improve GitHub action to include sentry sourcemap and release
+
 ## 1.1.0
 
 ### Minor Changes
