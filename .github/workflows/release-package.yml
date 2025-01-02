@@ -60,13 +60,13 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         run: |
           # Get version from CLI package.json
-          CLI_VERSION=$(node -p "require('./apps/cli/package.json').version")
+          CLI_VERSION=$(node -p "require('./apps/cli/package/package.json').version")
 
           # Set as environment variable for subsequent steps
           echo "CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
 
           # Inject source maps for the CLI app
-          sentry-cli sourcemaps inject ./apps/cli/dist
+          sentry-cli sourcemaps inject ./apps/cli/package/dist
 
       - name: Create Sentry release
         if: steps.changesets.outputs.published == 'true'
@@ -79,4 +79,4 @@ jobs:
         with:
           environment: production
           version: ${{ env.CLI_VERSION }}
-          sourcemaps: './apps/cli/dist'
+          sourcemaps: './apps/cli/package/dist'
