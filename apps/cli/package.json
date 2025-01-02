@@ -47,6 +47,8 @@
     "@repo/base": "workspace:*",
     "@repo/ioloc": "workspace:*",
     "@repo/translate": "workspace:*",
+    "@sentry/esbuild-plugin": "^2.22.7",
+    "@sentry/node": "^8.47.0",
     "chalk": "^5.3.0",
     "yargs": "^17.7.2"
   },
@@ -57,9 +59,6 @@
     "esbuild": "^0.19.10",
     "pkg": "^5.8.1",
     "rimraf": "^5.0.1",
-    "rollup": "^4.9.1",
-    "tsup": "^8.0.1",
-    "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "tsup": "^8.0.1"
   }
 }
