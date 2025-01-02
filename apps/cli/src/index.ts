@@ -20,6 +20,6 @@ const parser = yargs(hideBin(process.argv))
   .help()
   .alias('help', 'h');
 
-(async () => {
+export const cli = async () => {
   await parser.argv;
-})();
+};

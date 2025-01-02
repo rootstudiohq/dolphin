@@ -76,29 +76,46 @@ export class OpenAITranslator implements Translator {
         ', ',
       )}, keys: ${batch.contents.map((c) => c.key).join(', ')}`,
     );
-    const stream = await this.provider.translate({
-      context: config.globalContext,
-      sourceLanguage: batch.sourceLanguage,
-      targetLanguages: batch.targetLanguages,
-      contents: batch.contents,
-    });
+    try {
+      const stream = await this.provider.translate({
+        context: config.globalContext,
+        sourceLanguage: batch.sourceLanguage,
+        targetLanguages: batch.targetLanguages,
+        contents: batch.contents,
+      });
 
-    for await (const s of stream.fullStream) {
-      // Empty loop to consume the stream so we can get the final object
+      logger.info(`Start openai translating stream`);
+      try {
+        for await (const s of stream.partialObjectStream) {
+          // Log partial results and handle them appropriately
+          logger.debug(`Received partial translation: ${JSON.stringify(s)}`);
+        }
+      } catch (streamError) {
+        logger.error(`Error during stream processing: ${streamError}`);
+        throw streamError;
+      }
+
+      logger.info(`Streaming finished`);
+      const translationResponse = await stream.object;
+      logger.info(
+        `Translation response: ${JSON.stringify(translationResponse)}`,
+      );
+      const usage = await stream.usage;
+      logger.info(`Usage: ${JSON.stringify(usage)}`);
+
+      // Update usage
+      this.usage.promptTokens += usage.promptTokens;
+      this.usage.completionTokens += usage.completionTokens;
+      this.usage.totalTokens += usage.totalTokens;
+
+      if (Object.keys(translationResponse).length === 0) {
+        throw new Error('Failed to receive translation response object');
+      }
+
+      return translationResponse;
+    } catch (error) {
+      logger.error(`Error translating openai batch: ${error}`);
+      throw error;
     }
-
-    const translationResponse = await stream.object;
-    const usage = await stream.usage;
-
-    // Update usage
-    this.usage.promptTokens += usage.promptTokens;
-    this.usage.completionTokens += usage.completionTokens;
-    this.usage.totalTokens += usage.totalTokens;
-
-    if (Object.keys(translationResponse).length === 0) {
-      throw new Error('Failed to receive translation response object');
-    }
-
-    return translationResponse;
   }
 }

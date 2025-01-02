@@ -74,7 +74,7 @@ Translate from en-US to zh-CN, ja:
     );
     logger.info(`Translating with instructions: ${instructions}`);
     logger.info(`Translating with user content: ${userContent}`);
-    const result = await streamObject({
+    const result = streamObject({
       model: this.model,
       mode: 'json',
       schema: TranslationReponseSchema,
