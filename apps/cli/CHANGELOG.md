@@ -1,5 +1,12 @@
 # @icodesign/dolphin
 
+## 1.1.0
+
+### Minor Changes
+
+- 6043eb8: - Improve openai translator prompt
+  - Add sentry error tracking
+
 ## 1.0.2
 
 ### Patch Changes
