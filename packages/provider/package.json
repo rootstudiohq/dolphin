@@ -11,9 +11,9 @@
   "scripts": {},
   "dependencies": {
     "@repo/base": "workspace:*",
-    "ai": "^3.3.20",
-    "openai": "^4.20.0",
-    "@ai-sdk/openai": "^0.0.54",
+    "ai": "^4.0.22",
+    "openai": "^4.77.0",
+    "@ai-sdk/openai": "^1.0.11",
     "zod": "^3.22.4",
     "zod-validation-error": "^2.1.0"
   },

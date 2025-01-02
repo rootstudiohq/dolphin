@@ -30,51 +30,38 @@ export class OpenAITranslationProvider implements TranslationProvider {
   }
 
   async translate(payload: TranslationPayload) {
-    let instructions = `As an app/website translator, your task is to translate texts to target languages, considering context and developer notes for accuracy and cultural appropriateness. It's essential to preserve original format, including line breaks, separators, escaping characters and localization symbols, otherwise, user interface may break.
+    let instructions = `<instructions>As an app/website translator, your task is to translate texts to target languages, considering context and developer notes for accuracy and cultural appropriateness. It's essential to preserve original format, including line breaks, separators, escaping characters and localization symbols, otherwise, user interface may break.
 
-Source texts are in key=value format, value may contain placeholders for dynamic content and can extend to multiple lines. Translate only the 'value', keeping the 'key' as is. Lines starting with "//" are developer notes for translation guidance.
+The input is in JSON format, each key is a source text id, and the value is an object with source text and optional developer notes (for translation guidance). Translate only the 'value' with given context and developer notes, keeping the 'key' as is. 
 
-Example1:
+Output should be in strict JSON format: each source key links to an object with target languages as keys and translated texts as values. \n
 
-====
-// %@ is a placeholder for name
-key1=Hello "%@"\\nWelcome!
+<example>
+<input>
+Context: Just for demo
+Translate from en-US to zh-CN, ja:
+{"key1": {"source": "Hello "%@\\nWelcome!", "notes": ["%@ is a placeholder for name"]}, "key2": {"source": "Goodbye", "notes": ["This is a farewell:\n\n* If the text is a greeting, use \\"Hello\\" in Chinese.\n\n* If the text is a farewell, use \\"Goodbye\\" in Chinese."]}}
 
-key2=Follow the rules:
+<output>
+{"key1": {"zh-CN": "你好 "%@\\n欢迎!", "ja": "こんにちは "%@\\nようこそ!"}, "key2": {"zh-CN": "遵守以下规则:\n\n* 如果文本是问候语，使用“你好”。\n\n* 如果文本是告别语，使用“再见”。", "ja": "以下のルールに従って翻訳してください:\n\n* テキストが挨拶の場合、「こんにちは」と翻訳してください。\n\n* テキストが告別の場合、「さようなら」と翻訳してください。"}}
 
-* If the text is a greeting, use "Hello" in Chinese.
-
-* If the text is a farewell, use "Goodbye" in Chinese.
-====
-
-can be translate to the following in Chinese:
-
-====
-key1=你好 "%@"\\n欢迎!
-
-key2=遵守以下规则:
-
-* 如果文本是问候语，使用“你好”。
-
-* 如果文本是告别语，使用“再见”。
-====
-
-Output should be in JSON format: each source key links to an object with target languages as keys and translated texts as values. \n`;
+</example>`;
     if (payload.context) {
-      instructions += `\nTranslation context: \n${payload.context}\n`;
+      instructions += `\nContext: \n${payload.context}\n`;
     }
     let userContent = `Translate from ${
       payload.sourceLanguage
     } to target languages: [${payload.targetLanguages.join(', ')}].\n\n`;
-    userContent += '=====\n\n';
+    let contentJson: Record<string, any> = {};
     for (const content of payload.contents) {
+      contentJson[content.key] = {
+        source: content.source,
+      };
       if (content.notes) {
-        for (const note of content.notes) {
-          userContent += `// ${note}\n`;
-        }
+        contentJson[content.key].notes = content.notes;
       }
-      userContent += `${content.key}=${content.source}\n\n`;
     }
+    userContent += JSON.stringify(contentJson);
     const TranslationReponseSchema = z.record(
       z.string(),
       z.record(

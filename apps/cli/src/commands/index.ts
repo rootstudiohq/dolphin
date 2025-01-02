@@ -8,6 +8,7 @@ import localizeCommand from './localize.js';
 // import translateCommand from './translate.js';
 
 process.on('uncaughtException', function (err) {
+  console.log(err);
   logger.log(
     'error',
     'Fatal uncaught exception',

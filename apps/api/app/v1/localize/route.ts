@@ -1,7 +1,5 @@
 import { ApiError, ApiErrorCode, withApiHandler } from '@/lib/response';
-import { openai } from '@ai-sdk/openai';
 import { OpenAITranslationProvider } from '@repo/provider/openai';
-import { ObjectStreamPart, StreamingTextResponse, streamObject } from 'ai';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
@@ -73,7 +71,7 @@ async function handlePOSTRequest(request: NextRequest): Promise<any> {
     },
   });
 
-  return new StreamingTextResponse(stream, {
+  return new Response(stream, {
     headers: { 'Content-Type': 'application/json' },
   });
 }

@@ -11,9 +11,9 @@
   "dependencies": {
     "@repo/base": "workspace:*",
     "@repo/provider": "workspace:*",
-    "@ai-sdk/openai": "^0.0.54",
+    "@ai-sdk/openai": "^1.0.11",
     "@vercel/edge": "^1.1.1",
-    "ai": "^3.3.20",
+    "ai": "^4.0.22",
     "gpt-tokenizer": "^2.1.2",
     "next": "14.2.5",
     "openai": "^4.20.0",
