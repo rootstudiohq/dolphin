@@ -47,7 +47,6 @@
     "@repo/base": "workspace:*",
     "@repo/ioloc": "workspace:*",
     "@repo/translate": "workspace:*",
-    "@sentry/esbuild-plugin": "^2.22.7",
     "@sentry/node": "^8.47.0",
     "chalk": "^5.3.0",
     "yargs": "^17.7.2"
