@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.2.0
+
+### Minor Changes
+
+- 7960f18: Update cli entrypoint to avoid potential crash
+
 ## 1.1.1
 
 ### Patch Changes
