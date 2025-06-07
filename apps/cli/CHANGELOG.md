@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.2.1
+
+### Patch Changes
+
+- e43fb1c: Update AI SDK
+
 ## 1.2.0
 
 ### Minor Changes
