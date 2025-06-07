@@ -2,8 +2,10 @@ import * as Sentry from '@sentry/node';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { version } from '../package.json';
+import pkg from '../package.json' assert { type: 'json' };
 import { commands } from './commands/index.js';
+
+const { version } = pkg;
 
 /** Setup Sentry for error tracking if needed */
 if (process.env.SENTRY_DSN) {

@@ -40,7 +40,10 @@ export function createBatches(
   const maxSafeTokens = Math.floor(config.maxTokens * (1 - config.buffer));
 
   while (remainings.size > 0) {
-    const entity: LocalizationEntity = remainings.values().next().value;
+    const entity = remainings.values().next().value;
+    if (!entity) {
+      break;
+    }
     remainings.delete(entity);
     const targetLanguages = entity.untranslatedLanguages;
     if (targetLanguages.length === 0) {

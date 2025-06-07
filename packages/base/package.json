@@ -19,7 +19,7 @@
     "winston-transport": "^4.6.0",
     "xliff": "^6.2.0",
     "yaml": "^2.3.4",
-    "zod": "^3.22.4",
+    "zod": "^3.25.56",
     "zod-validation-error": "^2.1.0"
   },
   "devDependencies": {

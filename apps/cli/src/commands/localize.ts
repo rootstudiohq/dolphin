@@ -1,6 +1,5 @@
 import { consoleLogger, getLogDirectory, logger } from '@repo/base/logger';
 import spinner from '@repo/base/spinner';
-import * as Sentry from '@sentry/node';
 import chalk from 'chalk';
 import { Arguments, ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 

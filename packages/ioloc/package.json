@@ -20,7 +20,7 @@
     "@repo/base": "workspace:*",
     "xliff": "^6.2.0",
     "xml-js": "^1.6.11",
-    "zod": "^3.22.4"
+    "zod": "^3.25.56"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

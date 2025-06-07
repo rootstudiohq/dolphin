@@ -4,6 +4,7 @@ import { OpenAITranslationProvider } from '@repo/provider/openai';
 
 import { TranslationBatch } from '../../batch.js';
 import { LocalizationEntity } from '../../entity.js';
+import { calTokens } from '../../utils.js';
 import { Translator } from '../index.js';
 import { translateEntities } from '../translation.js';
 
@@ -76,6 +77,9 @@ export class OpenAITranslator implements Translator {
         ', ',
       )}, keys: ${batch.contents.map((c) => c.key).join(', ')}`,
     );
+    const expectedChunkTokenCount =
+      batch.expectedTokens * (1 + translatorConfig.buffer);
+    let receivedChunkTokenCount = 0;
     try {
       const stream = await this.provider.translate({
         context: config.globalContext,
@@ -84,11 +88,27 @@ export class OpenAITranslator implements Translator {
         contents: batch.contents,
       });
 
-      logger.info(`Start openai translating stream`);
+      logger.info(`Start openai translating streaming...`);
       try {
         for await (const s of stream.partialObjectStream) {
           // Log partial results and handle them appropriately
-          logger.debug(`Received partial translation: ${JSON.stringify(s)}`);
+          // logger.debug(`Received partial translation: ${JSON.stringify(s)}`);
+          receivedChunkTokenCount += calTokens(
+            translatorConfig.tokenizer,
+            translatorConfig.tokenizerModel,
+            JSON.stringify(s),
+          );
+          if (onProgress) {
+            onProgress(
+              translatedCount / totalCount +
+                Math.min(
+                  receivedChunkTokenCount / expectedChunkTokenCount,
+                  ((batch.contents.length * batch.targetLanguages.length) /
+                    totalCount) *
+                    maxPercentage,
+                ),
+            );
+          }
         }
       } catch (streamError) {
         logger.error(`Error during stream processing: ${streamError}`);

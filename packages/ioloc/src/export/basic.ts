@@ -85,6 +85,13 @@ export class BasicExporter<P extends ExportParser>
       logger.info(
         `[BasicExporter: ${this.config.id}]: Exporting target localization<${language}> from ${langConfig.path}`,
       );
+      // check if the target file exists
+      if (!fs.existsSync(langConfig.path)) {
+        logger.warn(
+          `[BasicExporter: ${this.config.id}]: Target file not found: ${langConfig.path}, skip exporting`,
+        );
+        continue;
+      }
       const targetText = await this.targetFileContentFn(langConfig, language);
       json = await this.parser.exportTarget({
         fileId: this.config.id,

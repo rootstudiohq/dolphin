@@ -18,7 +18,7 @@
     "@repo/base": "workspace:*",
     "@repo/provider": "workspace:*",
     "@repo/ioloc": "workspace:*",
-    "ai": "^4.0.22",
+    "ai": "^4.3.16",
     "chalk": "^5.3.0",
     "js-tiktoken": "^1.0.8",
     "langchain": "^0.0.141",
@@ -26,7 +26,7 @@
     "openai": "^4.20.0",
     "ora": "^7.0.1",
     "xliff": "^6.2.0",
-    "zod": "^3.22.4"
+    "zod": "^3.25.56"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
