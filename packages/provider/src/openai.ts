@@ -15,7 +15,7 @@ export class OpenAITranslationProvider implements TranslationProvider {
       apiKey: options.apiKey,
       compatibility: 'strict', // https://sdk.vercel.ai/providers/ai-sdk-providers/openai#provider-instance
     });
-    this.model = this.openai('gpt-4.1');
+    this.model = this.openai('gpt-4o');
   }
 
   async config() {

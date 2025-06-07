@@ -102,7 +102,7 @@ export class JsonParser implements ExportParser {
         if (typeof current === 'string') {
           // An existing key in source json is found in target json, we will treat it as translated
           json.strings[key].localizations[options.language] = {
-            state: 'undefined',
+            state: 'translated',
             metadata: {
               extractedFrom: 'existing',
             },
