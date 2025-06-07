@@ -65,10 +65,11 @@ Translate from en-US to zh-CN, ja:
     const TranslationReponseSchema = z.record(
       z.string(),
       z.record(
-        z.enum([
-          payload.targetLanguages[0],
-          ...payload.targetLanguages.slice(1),
-        ]),
+        z.enum(
+          payload.targetLanguages.length > 0
+            ? (payload.targetLanguages as [string, ...string[]])
+            : ['en-US'],
+        ),
         z.string(),
       ),
     );
