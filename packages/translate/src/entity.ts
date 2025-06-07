@@ -105,6 +105,10 @@ export class LocalizationEntity {
     if (target.state === 'translated' || target.state === 'review_skipped') {
       return true;
     }
+    if (target.state === 'undefined') {
+      // TODO: need a new config to allow user control whether to consider previous unmanaged strings as translated
+      return true;
+    }
     return false;
   }
 

@@ -117,7 +117,7 @@ export function mergeDolphinJsons({
       newLocalizationUnit.state = newState;
       newLocalizationUnit.skip =
         previousJson.strings[key]?.localizations[targetLanguage]?.skip;
-      // merge metadata, new metadata will take precedence over previous metadata
+      // merge metadata, new metadata will take precedence over previous metadata, except for "extractedFrom"
       if (
         previousJson.strings[key]?.localizations[targetLanguage]?.metadata ||
         newLocalizationUnit.metadata
@@ -125,6 +125,9 @@ export function mergeDolphinJsons({
         newLocalizationUnit.metadata = {
           ...previousJson.strings[key]?.localizations[targetLanguage]?.metadata,
           ...newLocalizationUnit.metadata,
+          extractedFrom:
+            previousJson.strings[key]?.localizations[targetLanguage]?.metadata
+              ?.extractedFrom || newLocalizationUnit.metadata?.extractedFrom,
         };
       }
     }
@@ -180,7 +183,10 @@ function getState({
     });
     const isSourceDifferent =
       newSourceUnit.value !== previousSourceUnit.value ||
-      new Set(newEntity.allComments) !== new Set(previousEntity.allComments);
+      !equalSet(
+        new Set(newEntity.allComments),
+        new Set(previousEntity.allComments),
+      );
     if (isSourceDifferent) {
       // if source changes, we consider it as new
       if (newTargetUnit.state === 'undefined') {
@@ -197,4 +203,8 @@ function getState({
       return previousTargetUnit.state;
     }
   }
+}
+
+function equalSet<T>(xs: Set<T>, ys: Set<T>) {
+  return xs.size === ys.size && [...xs].every((x) => ys.has(x));
 }
