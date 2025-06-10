@@ -196,8 +196,8 @@ function getState({
     }
     const isTargetDifferent = newTargetUnit.value !== previousTargetUnit.value;
     if (isTargetDifferent) {
-      // if target changes, we consider it as translated (likely modified manually)
-      return 'translated';
+      // TODO: if target changes, we need handle it properly(likely modified manually), for now, we use new state or undefined
+      return newTargetUnit.state || 'undefined';
     } else {
       // target is the same, inherit previous state
       return previousTargetUnit.state;
