@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.2.2
+
+### Patch Changes
+
+- 7b4c75a: Fix incorrect state when merging dolphin json
+
 ## 1.2.1
 
 ### Patch Changes
