@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.3.0
+
+### Minor Changes
+
+- c420065: Add model customization for openai translator
+
 ## 1.2.2
 
 ### Patch Changes
