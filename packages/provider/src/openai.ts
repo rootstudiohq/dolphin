@@ -10,12 +10,12 @@ export class OpenAITranslationProvider implements TranslationProvider {
   private openai: OpenAIProvider;
   private model: LanguageModel;
 
-  constructor(options: { apiKey: string }) {
+  constructor(options: { apiKey: string; model?: string }) {
     this.openai = createOpenAI({
       apiKey: options.apiKey,
       compatibility: 'strict', // https://sdk.vercel.ai/providers/ai-sdk-providers/openai#provider-instance
     });
-    this.model = this.openai('gpt-4o');
+    this.model = this.openai(options.model || 'gpt-4o');
   }
 
   async config() {

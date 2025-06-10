@@ -19,14 +19,22 @@ export class OpenAITranslator implements Translator {
   maxRetry: number;
   provider: OpenAITranslationProvider;
 
-  constructor(apiKey: string, maxRetry: number = 1) {
+  constructor({
+    apiKey,
+    model,
+    maxRetry = 1,
+  }: {
+    apiKey: string;
+    model?: string;
+    maxRetry: number;
+  }) {
     this.usage = {
       promptTokens: 0,
       completionTokens: 0,
       totalTokens: 0,
     };
     this.maxRetry = maxRetry;
-    this.provider = new OpenAITranslationProvider({ apiKey });
+    this.provider = new OpenAITranslationProvider({ apiKey, model });
   }
 
   async config(): Promise<LLMTranslatorConfig> {

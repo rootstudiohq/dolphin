@@ -46,6 +46,7 @@ baseLanguage: en
 translator:
   agent: openai
   mode: interactive
+  model: gpt-4o
 localizations:
   - id: hostapp
     path: TranditionalXcodeDemo/${LANGUAGE}.lproj/Localizable.strings
@@ -144,7 +145,7 @@ The source language of the strings, which is used to translate from.
 
 Supported translators:
 
-- **openai**: OpenAI API. You need to provide the OpenAI API key as an environment variable (`OPENAI_API_KEY`) or pass it to the translator with the `apiKey` option.
+- **openai**: OpenAI API. You need to provide the OpenAI API key as an environment variable (`OPENAI_API_KEY`) or pass it to the translator with the `apiKey` option. By default, it uses `gpt-4o` model, which can be customized with the `model` option.
 - **api**: Dolphin API. You need to provide the `baseUrl` to the API endpoint.
 
 Supported modes:

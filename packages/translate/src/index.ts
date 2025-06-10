@@ -209,7 +209,11 @@ async function translateStrings(
     if (!apiKey) {
       throw new Error('OPENAI_API_KEY is not set');
     }
-    translator = new OpenAITranslator(apiKey);
+    translator = new OpenAITranslator({
+      apiKey,
+      model: config.translator.model,
+      maxRetry: config.translator.maxRetry,
+    });
   } else {
     throw new Error(`The translator agent: ${agent} is not supported`);
   }

@@ -73,6 +73,7 @@ const DolphinTranslatorConfigSchema = CommonTranslatorConfigSchema.extend({
 const OpenAITranslatorConfigSchema = CommonTranslatorConfigSchema.extend({
   agent: z.literal('openai'),
   apiKey: z.string().optional(),
+  model: z.string().optional(),
 }).merge(LLMTranslatorConfigSchema);
 
 const TranslatorConfigSchema = z.union([
