@@ -16,7 +16,8 @@
           "skip": false,
           "metadata": {
             "extractedFrom": "source"
-          }
+          },
+          "value": "empty"
         }
       }
     },
@@ -50,7 +51,8 @@
           "skip": true,
           "metadata": {
             "extractedFrom": "source"
-          }
+          },
+          "value": "hello world"
         }
       }
     },

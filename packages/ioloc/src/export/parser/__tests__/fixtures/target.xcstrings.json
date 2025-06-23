@@ -16,7 +16,8 @@
           "skip": false,
           "metadata": {
             "extractedFrom": "source"
-          }
+          },
+          "value": "empty"
         },
         "zh": {
           "state": "new",
@@ -66,7 +67,8 @@
           "skip": true,
           "metadata": {
             "extractedFrom": "source"
-          }
+          },
+          "value": "hello world"
         },
         "zh": {
           "state": "translated",
