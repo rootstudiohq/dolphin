@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.4.0
+
+### Minor Changes
+
+- 60d4d03: Add import command
+
 ## 1.3.1
 
 ### Patch Changes
