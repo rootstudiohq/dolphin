@@ -25,8 +25,8 @@
     "clean": "rimraf dist",
     "build": "tsup",
     "dev": "tsc -w --preserveWatchOutput",
-    "start": "pnpm build && node dist/index.cjs",
-    "start:debug": "pnpm build && node --inspect-brk dist/index.cjs",
+    "start": "pnpm clean && pnpm build && node dist/index.cjs",
+    "start:debug": "pnpm clean && pnpm build && node --inspect-brk dist/index.cjs",
     "prepublishOnly": "rimraf ./package && pnpm build && clean-publish --fields 'dependencies,publishConfig' && cp ../../README.md ../../LICENSE ./package",
     "pkg:mac": "NODE_ENV=production pkg . --no-bytecode --public-packages '*' --public --targets node18-macos-x64,node18-macos-arm64 -o dist/bin/dolphin-macos",
     "pkg:mac:compressed": "NODE_ENV=production pkg . --no-bytecode --public-packages '*' --public --targets node18-macos-x64,node18-macos-arm64 --compress Brotli -o dist/bin/dolphin-macos"

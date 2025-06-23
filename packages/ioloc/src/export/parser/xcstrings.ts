@@ -309,8 +309,6 @@ export class StringCatalogParser implements ExportParser {
       shouldTranslate,
       stringUnit,
     } = params;
-    // if no value found, use the key as the value
-    const value = stringUnit.value ?? key;
     this.updateSourceWithValue({
       json: json,
       key: key,
@@ -320,7 +318,7 @@ export class StringCatalogParser implements ExportParser {
       extractionState: extractionState,
       shouldTranslate: shouldTranslate,
       state: stringUnit.state,
-      value: value,
+      value: stringUnit.value,
     });
   }
 
@@ -379,6 +377,8 @@ export class StringCatalogParser implements ExportParser {
       stringCatalogUnitType,
     } = params;
     const shouldSkip = shouldTranslate === false;
+    // if no value found, use the key as the value
+    const sourceValue = value ?? key;
     json.strings[key] = {
       comment: comment,
       metadata: {
@@ -394,7 +394,7 @@ export class StringCatalogParser implements ExportParser {
             extractedFrom: 'source',
             state: state,
           },
-          value: value,
+          value: sourceValue,
         },
       },
     };

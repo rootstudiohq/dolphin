@@ -57,15 +57,10 @@ async function handleImportCommand(args: CmdArgs) {
   const config = await loadConfig({
     path: args.config,
   });
-  // const exportedResults = (args.results as string[]).map((result) => {
-  //   return {
-  //     bundlePath: result,
-  //   };
-  // });
-  // await doctorCheck();
-  // await importLocalizations({
-  //   config,
-  //   translationBundle: args.bundlePath,
-  // });
-  // spinner.next(chalk.green(`Done`)).succeed(undefined, { logger: false }));
+  await importLocalizations({
+    config,
+    translationBundle: args.bundlePath,
+    metas: {},
+  });
+  spinner.next(chalk.green(`Done`)).succeed(undefined, { logging: false });
 }

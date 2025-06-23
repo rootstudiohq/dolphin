@@ -1,6 +1,10 @@
 import { writeFile } from '@repo/base/utils';
+import fs from 'fs';
 
-import { XCStringsFile } from '../../export/parser/xcstrings.js';
+import {
+  XCStringsFile,
+  parseXCStrings,
+} from '../../export/parser/xcstrings.js';
 import { DolphinJSON } from '../../storage/index.js';
 import { ImportMerger } from '../basic.js';
 import { getTargetValue } from './common.js';
@@ -14,12 +18,18 @@ export class XCStringsMerger implements ImportMerger {
   }): Promise<void> {
     const { json, targetLanguage, targetFilePath } = options;
 
-    // Create a new XCStrings file
-    const xcstrings: XCStringsFile = {
-      sourceLanguage: json.sourceLanguage,
-      version: '1.0',
-      strings: {},
-    };
+    // XCStrings contains all languages
+    // Check if a XCStrings file exists
+    let xcstrings: XCStringsFile;
+    if (fs.existsSync(targetFilePath)) {
+      xcstrings = parseXCStrings(fs.readFileSync(targetFilePath, 'utf8'));
+    } else {
+      xcstrings = {
+        sourceLanguage: json.sourceLanguage,
+        version: '1.0',
+        strings: {},
+      };
+    }
 
     // Update the XCStrings file with translations
     for (const [key, value] of Object.entries(json.strings)) {

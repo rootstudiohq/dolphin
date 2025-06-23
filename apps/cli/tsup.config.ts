@@ -7,7 +7,7 @@ export default defineConfig({
   minify: process.env.NODE_ENV === 'production' ? true : false,
   noExternal: [/./],
   format: ['cjs'],
-  target: 'node18',
+  target: 'node22',
   clean: true,
   env: {
     SENTRY_DSN: process.env.SENTRY_DSN || '',

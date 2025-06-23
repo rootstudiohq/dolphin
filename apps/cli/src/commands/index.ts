@@ -21,7 +21,7 @@ process.on('uncaughtException', (error) => {
 
 export const commands: CommandModule<{}, any>[] = [
   // exportCommand,
-  // importCommand,
+  importCommand,
   localizeCommand,
   // translateCommand,
 ];

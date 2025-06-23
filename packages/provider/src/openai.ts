@@ -21,7 +21,7 @@ export class OpenAITranslationProvider implements TranslationProvider {
   async config() {
     const config: LLMTranslatorConfig = {
       maxOutputTokens: 16383,
-      buffer: 0.3,
+      buffer: 0.4,
       maxRetry: 1,
       tokenizer: 'openai',
       tokenizerModel: 'gpt-4',

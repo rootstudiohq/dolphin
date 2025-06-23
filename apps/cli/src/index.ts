@@ -16,12 +16,9 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
-const parser = yargs(hideBin(process.argv))
+yargs()
   .command(commands)
   .version(version)
   .help()
-  .alias('help', 'h');
-
-export const cli = async () => {
-  await parser.argv;
-};
+  .alias('help', 'h')
+  .parse(hideBin(process.argv));

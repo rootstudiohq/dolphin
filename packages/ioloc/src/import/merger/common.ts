@@ -57,7 +57,7 @@ export function getTargetValue({
     );
     return defaultValueIfNoTranslation;
   }
-  if (!translated.value) {
+  if (translated.value === undefined || translated.value === null) {
     throw new Error(
       `No string (${key}) translation found for ${targetLanguage} in ${json.sourceLanguage}, but state is ${translated.state}`,
     );

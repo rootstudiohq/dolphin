@@ -39,7 +39,7 @@ export class LocalizationEntity {
     if (!source) {
       throw new Error(`Source language ${this.sourceLanguage} not found.`);
     }
-    if (!source.value) {
+    if (source.value === undefined || source.value === null) {
       throw new Error(`Source value not found for ${this.key}`);
     }
     return source.value;

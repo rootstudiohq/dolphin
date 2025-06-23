@@ -100,7 +100,6 @@ export class OpenAITranslator implements Translator {
       try {
         for await (const s of stream.partialObjectStream) {
           // Log partial results and handle them appropriately
-          logger.debug(`Received partial translation: ${JSON.stringify(s)}`);
           receivedChunkTokenCount += calTokens(
             translatorConfig.tokenizer,
             translatorConfig.tokenizerModel,
