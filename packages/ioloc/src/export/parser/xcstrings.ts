@@ -309,6 +309,8 @@ export class StringCatalogParser implements ExportParser {
       shouldTranslate,
       stringUnit,
     } = params;
+    // if no value found, use the key as the value
+    const value = stringUnit.value ?? key;
     this.updateSourceWithValue({
       json: json,
       key: key,
@@ -318,7 +320,7 @@ export class StringCatalogParser implements ExportParser {
       extractionState: extractionState,
       shouldTranslate: shouldTranslate,
       state: stringUnit.state,
-      value: stringUnit.value,
+      value: value,
     });
   }
 
