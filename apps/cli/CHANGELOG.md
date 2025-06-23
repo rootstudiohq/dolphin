@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.3.1
+
+### Patch Changes
+
+- 518e833: Fixed Xcode string catalog default value not recognized bug
+
 ## 1.3.0
 
 ### Minor Changes
