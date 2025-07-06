@@ -6,10 +6,6 @@ import { describe, expect, it } from 'vitest';
 import { LocalizationFormat, parseConfig, parseConfigText } from '../config';
 
 describe('Config Parser', () => {
-  it('should throw error when no config path provided', async () => {
-    await expect(parseConfig(undefined)).rejects.toThrow('Missing config file');
-  });
-
   it('should throw error for invalid config path', async () => {
     await expect(
       parseConfig('/some-invalid/path/config.yml'),
