@@ -1,6 +1,6 @@
 {
   "name": "@rootapp/dolphin",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "main": "./dist/index.cjs",
   "bin": "./bin/cli.cjs",
   "type": "module",
