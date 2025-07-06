@@ -127,13 +127,7 @@ export async function parseConfigText({
 }
 
 export async function parseConfig(userConfigPath?: string): Promise<Config> {
-  let configPath = userConfigPath;
-  if (!configPath) {
-    throw new Error(
-      `Missing config file. You can either set using --config or put dolphin.y[a]ml under the root path of the project.`,
-    );
-  }
-  configPath = absoluteFilePath(configPath, process.cwd());
+  let configPath = absoluteFilePath(userConfigPath ?? '', process.cwd());
   // Check if configPath is a directory
   const stats = await fs.promises.stat(configPath);
   if (stats.isDirectory()) {
