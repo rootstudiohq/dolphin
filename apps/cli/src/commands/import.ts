@@ -6,7 +6,7 @@ import { Arguments, ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import { importLocalizations, loadConfig } from './core.js';
 
 interface CmdArgs extends Arguments {
-  config: string;
+  config?: string;
   bundlePath: string;
 }
 
@@ -21,7 +21,6 @@ const cmd: CommandModule<{}, CmdArgs> = {
         describe:
           'Path to the config file. Will search dolphin.y[a]ml under root path if not specified',
         type: 'string',
-        demandOption: true,
       },
       bundlePath: {
         alias: 'p',
@@ -50,10 +49,6 @@ async function handleImportCommand(args: CmdArgs) {
   logger.info('===================================');
   logger.info('============= Importing ===========');
   logger.info('===================================');
-  if (!args.config) {
-    spinner.fail(chalk.red('Config file path is not specified'));
-    return;
-  }
   const config = await loadConfig({
     path: args.config,
   });

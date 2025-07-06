@@ -189,10 +189,7 @@ function getState({
       );
     if (isSourceDifferent) {
       // if source changes, we consider it as new
-      if (newTargetUnit.state === 'undefined') {
-        return 'new';
-      }
-      return newTargetUnit.state;
+      return 'new';
     }
     const isTargetDifferent = newTargetUnit.value !== previousTargetUnit.value;
     if (isTargetDifferent) {
