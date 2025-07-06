@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.4.1
+
+### Patch Changes
+
+- 2699ec1: Fixed local dolphin.y[a]ml not automatically detected issue
+
 ## 1.4.0
 
 ### Minor Changes
