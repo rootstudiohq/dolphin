@@ -228,6 +228,6 @@ describe('mergeDolphinJsons', () => {
     });
 
     mergeDolphinJsons({ newJson, previousJson });
-    expect(newJson.strings.key1.localizations.ja.state).toBe('translated');
+    expect(newJson.strings.key1.localizations.ja.state).toBe('new');
   });
 });
