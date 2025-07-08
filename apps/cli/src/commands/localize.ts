@@ -52,10 +52,6 @@ async function handleLocalizeCommand(args: CmdArgs) {
     chalk.gray(`Detailed logs directory: ${getLogDirectory()}\n`),
   );
   var initialStartTime = performance.now();
-  if (!args.config) {
-    spinner.fail(chalk.red('Config file path is not specified'));
-    return;
-  }
   consoleLogger.info(`=== Step 0: Load config ===`);
   const config = await loadConfig({
     path: args.config,

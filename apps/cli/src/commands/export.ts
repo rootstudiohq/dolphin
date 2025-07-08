@@ -42,10 +42,6 @@ async function handleExportCommand(args: CmdArgs) {
   logger.info('===================================');
   logger.info('============= Exporting ===========');
   logger.info('===================================');
-  if (!args.config) {
-    spinner.fail(chalk.red('Config file path is not specified'));
-    return;
-  }
   const config = await loadConfig({
     path: args.config,
   });
