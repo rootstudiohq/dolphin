@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.4.2
+
+### Patch Changes
+
+- beca66e: Fixed local default config file not recognized bug
+
 ## 1.4.1
 
 ### Patch Changes
