@@ -117,6 +117,13 @@ export function mergeDolphinJsons({
       newLocalizationUnit.state = newState;
       newLocalizationUnit.skip =
         previousJson.strings[key]?.localizations[targetLanguage]?.skip;
+      
+      // Preserve the translated value from previous JSON if new JSON doesn't have a value
+      const previousValue = previousJson.strings[key]?.localizations[targetLanguage]?.value;
+      if (newLocalizationUnit.value === undefined && previousValue !== undefined) {
+        newLocalizationUnit.value = previousValue;
+      }
+      
       // merge metadata, new metadata will take precedence over previous metadata, except for "extractedFrom"
       if (
         previousJson.strings[key]?.localizations[targetLanguage]?.metadata ||
@@ -193,6 +200,10 @@ function getState({
     }
     const isTargetDifferent = newTargetUnit.value !== previousTargetUnit.value;
     if (isTargetDifferent) {
+      // If new target has no value but previous does, preserve previous state
+      if (newTargetUnit.value === undefined && previousTargetUnit.value !== undefined) {
+        return previousTargetUnit.state;
+      }
       // TODO: if target changes, we need handle it properly(likely modified manually), for now, we use new state or undefined
       return newTargetUnit.state || 'undefined';
     } else {

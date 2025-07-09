@@ -230,4 +230,38 @@ describe('mergeDolphinJsons', () => {
     mergeDolphinJsons({ newJson, previousJson });
     expect(newJson.strings.key1.localizations.ja.state).toBe('new');
   });
+
+  test('should preserve translated values and states when new JSON has undefined values', () => {
+    const newJson = createBaseDolphinJson({
+      strings: {
+        key1: {
+          comment: 'Same comment',
+          localizations: {
+            en: { value: 'Hello', state: 'new' },
+            ja: { state: 'new' }, // No value in new JSON
+            fr: { state: 'new' }, // No value in new JSON
+          },
+        },
+      },
+    });
+
+    const previousJson = createBaseDolphinJson({
+      strings: {
+        key1: {
+          comment: 'Same comment',
+          localizations: {
+            en: { value: 'Hello', state: 'translated' },
+            ja: { value: 'こんにちは', state: 'reviewed' },
+            fr: { value: 'Bonjour', state: 'reviewed' },
+          },
+        },
+      },
+    });
+
+    mergeDolphinJsons({ newJson, previousJson });
+    expect(newJson.strings.key1.localizations.ja.value).toBe('こんにちは');
+    expect(newJson.strings.key1.localizations.ja.state).toBe('reviewed');
+    expect(newJson.strings.key1.localizations.fr.value).toBe('Bonjour');
+    expect(newJson.strings.key1.localizations.fr.state).toBe('reviewed');
+  });
 });
