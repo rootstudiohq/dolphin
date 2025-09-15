@@ -1,5 +1,12 @@
 # @icodesign/dolphin
 
+## 1.4.3
+
+### Patch Changes
+
+- 4b4694d: Fixed local dolphin.y[a]ml not automatically detected issue
+- 1c1b6b3: Fixed: language files were not created if not existed before
+
 ## 1.4.2
 
 ### Patch Changes
