@@ -90,6 +90,15 @@ export class BasicExporter<P extends ExportParser>
         logger.warn(
           `[BasicExporter: ${this.config.id}]: Target file not found: ${langConfig.path}, skip exporting`,
         );
+        for (const key in json.strings) {
+          json.strings[key].localizations[language] = {
+            state: 'new',
+            metadata: {
+              extractedFrom: 'undefined',
+            },
+            value: undefined,
+          };
+        }
         continue;
       }
       const targetText = await this.targetFileContentFn(langConfig, language);
