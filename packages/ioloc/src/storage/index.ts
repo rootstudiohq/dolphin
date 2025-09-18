@@ -103,3 +103,20 @@ export function untranslatedLanguages(unit: DolphinJSONStringUnit): string[] {
       unit.localizations[language].state === 'rejected',
   );
 }
+
+export function getHighPriorityState(
+  lhs: z.infer<typeof DolphinJSONLocalizationStateSchema>,
+  rhs: z.infer<typeof DolphinJSONLocalizationStateSchema>,
+) {
+  const sorts: z.infer<typeof DolphinJSONLocalizationStateSchema>[] = [
+    'undefined',
+    'new',
+    'translated',
+    'rejected',
+    'review_skipped',
+    'reviewed',
+  ];
+  const lhsIndex = sorts.indexOf(lhs);
+  const rhsIndex = sorts.indexOf(rhs);
+  return lhsIndex > rhsIndex ? lhs : rhs;
+}

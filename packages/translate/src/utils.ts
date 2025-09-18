@@ -4,6 +4,7 @@ import {
   DolphinJSON,
   DolphinJSONLocalizationUnit,
   DolphinJSONStringUnit,
+  getHighPriorityState,
 } from '@repo/ioloc/storage';
 import { Tiktoken, TiktokenModel, encodingForModel } from 'js-tiktoken';
 
@@ -196,8 +197,11 @@ function getState({
       // TODO: if target changes, we need handle it properly(likely modified manually), for now, we use new state or undefined
       return newTargetUnit.state || 'undefined';
     } else {
-      // target is the same, inherit previous state
-      return previousTargetUnit.state;
+      // target is the same, use whichever state with higher priority
+      return getHighPriorityState(
+        previousTargetUnit.state,
+        newTargetUnit.state,
+      );
     }
   }
 }

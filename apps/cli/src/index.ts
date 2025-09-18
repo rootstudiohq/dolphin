@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/node';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import pkg from '../package.json' assert { type: 'json' };
+import pkg from '../package.json' with { type: 'json' };
 import { commands } from './commands/index.js';
 
 const { version } = pkg;
