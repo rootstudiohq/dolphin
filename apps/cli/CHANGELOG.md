@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.4.4
+
+### Patch Changes
+
+- d263dd8: Fixed unsynced state when target value is not changed
+
 ## 1.4.3
 
 ### Patch Changes
