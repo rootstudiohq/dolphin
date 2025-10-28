@@ -69,7 +69,9 @@ Dolphin defines an interface for translators to implement, which is responsible 
 
 #### openai
 
-This is a local translator which uses OpenAI API to translate strings. To use this translator, you need to provide the OpenAI API key as an environment variable (`OPENAI_API_KEY`) or pass it to the translator with the `apiKey` option.
+This is a local translator which uses OpenAI API to translate strings. To use this translator, you need to provide the OpenAI API key as an environment variable (`OPENAI_API_KEY`) or pass it to the translator with the `apiKey` option. Optionally, you can specify the model to use with the `model` option. By default, it uses `gpt-4o` model.
+
+The translator also supports any openai-comptable models, such as gemini and deepseek. However, the model needs support json response format, for major supported models, please refer to [OpenRouter website](https://openrouter.ai/models?fmt=cards&supported_parameters=response_format&order=top-weekly). To use a custom OpenAI-compatible endpoint, you can provide the `baseUrl` option to the translator.
 
 #### api
 
@@ -145,7 +147,7 @@ The source language of the strings, which is used to translate from.
 
 Supported translators:
 
-- **openai**: OpenAI API. You need to provide the OpenAI API key as an environment variable (`OPENAI_API_KEY`) or pass it to the translator with the `apiKey` option. By default, it uses `gpt-4o` model, which can be customized with the `model` option.
+- **openai**: OpenAI API. You need to provide the OpenAI API key as an environment variable (`OPENAI_API_KEY`) or pass it to the translator with the `apiKey` option. By default, it uses `gpt-4o` model, which can be customized with the `model` option. Optionally, you can provide the `baseUrl` to use a custom OpenAI-compatible endpoint.
 - **api**: Dolphin API. You need to provide the `baseUrl` to the API endpoint.
 
 Supported modes:

@@ -22,9 +22,11 @@ export class OpenAITranslator implements Translator {
   constructor({
     apiKey,
     model,
+    baseUrl,
     maxRetry = 1,
   }: {
     apiKey: string;
+    baseUrl?: string;
     model?: string;
     maxRetry: number;
   }) {
@@ -34,7 +36,7 @@ export class OpenAITranslator implements Translator {
       totalTokens: 0,
     };
     this.maxRetry = maxRetry;
-    this.provider = new OpenAITranslationProvider({ apiKey, model });
+    this.provider = new OpenAITranslationProvider({ baseUrl, apiKey, model });
   }
 
   async config(): Promise<LLMTranslatorConfig> {

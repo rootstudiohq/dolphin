@@ -211,6 +211,7 @@ async function translateStrings(
     }
     translator = new OpenAITranslator({
       apiKey,
+      baseUrl: config.translator.baseUrl,
       model: config.translator.model,
       maxRetry: config.translator.maxRetry,
     });
