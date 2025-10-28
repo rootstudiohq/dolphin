@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.4.5
+
+### Patch Changes
+
+- 07927c5: Add support for openai-compatible models
+
 ## 1.4.4
 
 ### Patch Changes
