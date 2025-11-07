@@ -29,11 +29,11 @@ export function getTargetValue({
   const sourceString = unit.localizations[json.sourceLanguage];
   let defaultValueIfNoTranslation: string | undefined;
   if (behavior === MergeBehavior.Noop) {
-    defaultValueIfNoTranslation = undefined;
+    defaultValueIfNoTranslation = translated.value;
   } else if (behavior === MergeBehavior.CopySource) {
-    defaultValueIfNoTranslation = sourceString.value;
+    defaultValueIfNoTranslation = translated.value || sourceString.value;
   } else if (behavior === MergeBehavior.WriteEmpty) {
-    defaultValueIfNoTranslation = '';
+    defaultValueIfNoTranslation = translated.value || '';
   }
   if (!translated) {
     logger.warn(

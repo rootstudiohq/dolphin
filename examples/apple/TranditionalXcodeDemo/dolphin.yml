@@ -1,6 +1,9 @@
 baseLanguage: en
 translator:
   agent: openai
+  baseUrl: https://openrouter.ai/api/v1
+  model: deepseek/deepseek-chat-v3-0324
+  mode: interactive
 localizations:
   - id: app
     path: TranditionalXcodeDemo/${LANGUAGE}.lproj/Localizable.strings
