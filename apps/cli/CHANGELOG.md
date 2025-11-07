@@ -1,5 +1,11 @@
 # @icodesign/dolphin
 
+## 1.4.6
+
+### Patch Changes
+
+- 3abe455: Fixed default value when not translated
+
 ## 1.4.5
 
 ### Patch Changes
